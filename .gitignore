@@ -1,3 +1,7 @@
 .stack-work/
 regex-deriv-backref.cabal
 *~
+
+*.aux
+*.log
+*.synctex.gz

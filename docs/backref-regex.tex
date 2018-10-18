@@ -1,0 +1,96 @@
+% !TEX TS-program = pdflatex
+% !TEX encoding = UTF-8 Unicode
+\documentclass[11pt]{amsart}
+
+\usepackage[utf8]{inputenc}
+
+\usepackage{geometry} % to change the page dimensions
+\geometry{a4paper} % or letterpaper (US) or a5paper or....
+
+
+\usepackage{booktabs} % for much better looking tables
+\usepackage{array} % for better arrays (eg matrices) in maths
+\usepackage{paralist} % very flexible & customisable lists (eg. enumerate/itemize, etc.)
+\usepackage{verbatim} % adds environment for commenting out blocks of text & for better verbatim
+\usepackage{subfig} % make it possible to include more than one captioned figure/table in a single float
+
+
+\usepackage{mathtools}
+
+
+\title{Parsing Regex Backreferences with Derivatives}
+\author{}
+%\date{} % Activate to display a given date or no date (if empty),
+         % otherwise the current date is printed 
+
+\begin{document}
+\maketitle
+
+For now, I'm just typesetting the derivative rules.
+
+Some notations:
+\begin{itemize}
+\item $\Sigma$ is the set of characters in the alphabet
+\item $c$ is a metavariable for a single character from $\Sigma$
+\item $\Sigma^*$ is a (possibly empty) string of characters
+\item $\varepsilon$ is the empty string
+\item $x$ is a metavariable for the name of a capturing group/backreference
+\item $\theta$ is a metavariable for a finite map from variables to strings
+\item right-baiased merge of two finite maps is $A + B$
+\end{itemize}
+
+The basic idea is that we extend the accepts-empty function $\nu(r)$ from returning a simple boolean to returning possible substitutions.
+Then, $\partial$ is parameterized by a substitution.
+Annoyingly (but it's not that bad), $\nu$ must also be parameterized by a substitution.
+
+Here are the core rules:
+
+$$
+\begin{array}{rcl}
+\nu^\theta(\bot) &=& \{\} \\
+\nu^\theta(c) &=& \{\} \\
+\nu^\theta(\varepsilon) &=& \{\theta\} \\
+\nu^\theta(r \cdot r') &=&
+	\bigcup_{\theta' \in \nu^\theta(r)}
+		\nu^{\theta'}(r') \\
+\nu^\theta(r + r') &=& \nu^\theta(r) \cup \nu^\theta(r') \\
+\nu^\theta(r^*) &=& \{\theta\} \\
+\nu^\theta(x{=}\Sigma^*.\,r) &=&
+	\{ \theta' + \{x \mapsto \Sigma^*\}
+	\mid \theta' \in \nu^\theta(r)
+	\} \\
+\nu^\theta(x) &=&
+	\begin{cases}
+	\{\theta\} & \textrm{if }\theta(x) = \varepsilon \\
+	\{\} & \textrm{otherwise}
+	\end{cases} \\
+\nu^\theta(\theta'{:r}) &=& \nu^{\theta + \theta'}(r) \\
+\end{array}
+$$
+
+$$
+\begin{array}{rcl}
+\partial_c^\theta \bot &=& \bot \\
+\partial_c^\theta c' &=&
+	\begin{cases}
+	\varepsilon & \textrm{if } c = c' \\
+	\bot & \textrm{otherwise}
+	\end{cases} \\
+\partial_c^\theta \varepsilon &=& \bot \\
+\partial_c^\theta (r\cdot r') &=&
+	\partial_c^\theta r\cdot r' +
+	\sum_{\theta' \in \nu^\theta(r)} \partial_c^{\theta'} r' \\
+\partial_c^\theta (r + r') &=& \partial_c^\theta r + \partial_c^\theta r' \\
+\partial_c^\theta r^* &=& \partial_c^\theta r\cdot r^* \\
+\partial_c^\theta x{=}\Sigma^*.\,r &=& x{=}\Sigma^*c.\,\partial_c^\theta r \\
+\partial_c^\theta x &=&
+	\begin{cases}
+	\partial_c^\theta \Sigma^* & \textrm{where }\theta(x)=\Sigma^* \\
+	\bot & \textrm{if } x \notin \mathrm{dom}(\theta) \\
+	\end{cases} \\
+\partial_c^\theta \theta'{: r} &=& \partial_c^{\theta + \theta'}r \\
+\end{array}
+$$
+
+
+\end{document}

@@ -29,10 +29,11 @@ Derivative-based regex libraries restrict users to truly regular languages, rath
 Unfortunately, there are common situations where that's _not quite_ enough power.
 In particular, I want to be able to tokenize a docstring with a single regex:
 ```
-<<<(?delim=[^\n]*)\n~(\n(=delim))>>>
+<<<(?delim=[^\n]*)\n
+    (?text=~(.*\n(=delim).*))
+\n(=delim)>>>
 ```
 where `(?x=r)` matches `r` and stores the result in the group `x`, and `(=x)` replays the last match stored in `x`.
-Merely allowing 
 
 This library implements regular expressions using derivatives, but it also extends those derivatives to handle capturing groups and simple backreference.
 This allows some context-sensitivity, but it is severely limited so it cannot recognize even context-free languages in general.
