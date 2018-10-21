@@ -84,6 +84,10 @@ smokeTests_nu =
     , (Alt (Str "a") (Str ""), [[]])
     , (Alt (Str "a") (Str "b"), [])
 
+    -- star always accepts empty
+    , (Star (Str ""), [[]])
+    , (Star (Str "a"), [[]])
+
     -- capture passes through with/without group
     , (Capture "x" "" (Str ""), [[("x", "")]])
     , (Capture "x" "" (Str "a"), [])
@@ -119,6 +123,9 @@ smokeTests_nu =
         Theta (Env.empty `Env.insert` ("1", "bye")) $ Str "", [[("1", "bye")]])
     -- state update is destroyed by bottom
     , (Theta (Env.empty `Env.insert` ("1", "hi")) Bot, [])
+
+    -- capturing groups do not escape star
+    , (Star (Theta (Env.empty `Env.insert` ("1", "boo!")) Empty), [[]])
     ]
 
 
@@ -152,6 +159,12 @@ smokeTests_deriv =
     , (Alt (Str "a") (Str "b"), 'b', [[]])
     , (Alt (Str "a") (Str "b"), 'c', [])
 
+    -- Star: r* equivalent to rr* when input not empty
+    , (Star (Str "a"), 'a', [[]])
+    , (Star (Str "a"), 'c', [])
+    , (Star (Alt (Str "a") (Str "b")), 'a', [[]])
+    , (Star (Alt (Str "a") (Str "b")), 'b', [[]])
+
     -- capture records input
     , (Capture "1" "" (Str "a"), 'a', [[("1", "a")]])
 
@@ -166,6 +179,10 @@ smokeTests_deriv =
     , (Theta (Env.empty `Env.insert` ("1", "a")) (Replay "1"), 'a', [[("1", "a")]])
     -- state update is transparent to derivative for further user operations
     , (Theta (Env.empty `Env.insert` ("1", "x")) (Str "a"), 'a', [[("1", "x")]])
+
+    -- state makes it way through an expanded star
+    , (Star (Capture "1" "" $ Alt (Char 'a') (Char 'b')), 'a', [[("1", "a")]])
+    , (Star (Capture "1" "" $ Alt (Char 'a') (Char 'b')), 'b', [[("1", "b")]])
     ]
 
 
@@ -205,11 +222,24 @@ smokeTests_match =
     , (Alt (Char 'a') (Char 'b'), "b", [[]])
     , (Alt (Char 'a') (Char 'b'), "c", [])
 
+    -- star
+    , (Star (Char 'a'), "", [[]])
+    , (Star (Char 'a'), "a", [[]])
+    , (Star (Char 'a'), "aa", [[]])
+    , (Star (Char 'a'), "aaa", [[]])
+
     -- replay
     , (Seq (Capture "1" "" $ Alt (Char 'a') (Char 'b')) (Replay "1"), "aa", [[("1", "a")]])
     , (Seq (Capture "1" "" $ Alt (Char 'a') (Char 'b')) (Replay "1"), "bb", [[("1", "b")]])
     , (Seq (Capture "1" "" $ Alt (Char 'a') (Char 'b')) (Replay "1"), "ab", [])
     , (Seq (Capture "1" "" $ Alt (Char 'a') (Char 'b')) (Replay "1"), "ba", [])
+
+    -- replay star
+    , (Seq (Capture "1" "" $ Star (Char 'a')) (Replay "1"), "", [[]])
+    , (Seq (Capture "1" "" $ Star (Char 'a')) (Replay "1"), "a", [])
+    , (Seq (Capture "1" "" $ Star (Char 'a')) (Replay "1"), "aa", [[]])
+    , (Seq (Capture "1" "" $ Star (Char 'a')) (Replay "1"), "aaa", [])
+    , (Seq (Capture "1" "" $ Star (Char 'a')) (Replay "1"), "aaaa", [[]])
 
     -- TODO more
     ]

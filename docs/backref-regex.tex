@@ -93,4 +93,10 @@ $$
 $$
 
 
+In case $r$ accepts empty with $\theta$, $r*$ should merely accept empty, but with empty capturing groups.
+I think that makes sense --- TODO.
+If not, then $\nu^\theta(r^*) = \{\theta\} \cup \nu^\theta(r)$.
+In fact, let me think about $\partial_c^\theta r^* = (\partial_c^\theta r)\cdot r^*$ vs. $\partial_c^\theta r^* = \partial_c^\theta (r\cdot r^*)$.
+I think the former supports that no capturing groups escape a star, whereas the latter does the reverse.
+
 \end{document}

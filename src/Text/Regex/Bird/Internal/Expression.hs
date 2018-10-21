@@ -14,7 +14,7 @@ data GRegex x a =
     | Str (Seq a)
     | Seq_ (GRegex x a) (GRegex x a)
     | Alt_ (GRegex x a) (GRegex x a)
-    -- TODO Star
+    | Star (GRegex x a)
     -- TODO complement, intersection, character classes
     | Capture x (Seq a) (GRegex x a)
     | Replay x
@@ -62,4 +62,3 @@ pattern Theta θ r <- Theta_ θ r
     -- Theta _ Bot = Bot
     -- Theta _ (Str w) = Str w
     Theta θ r = Theta_ θ r
-    -- Theta θ (Replay x) = -- TODO
