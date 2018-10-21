@@ -26,6 +26,7 @@ dependencies:
 default-extensions:
 - OverloadedStrings
 - PatternSynonyms
+- TupleSections
 
 library:
   source-dirs: src

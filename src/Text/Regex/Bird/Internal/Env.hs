@@ -16,7 +16,7 @@ module Text.Regex.Bird.Internal.Env
     ( Env, NdEnv
     , empty, ok, no, one, many
     , insert, update, join
-    , lookup, amb
+    , lookup, amb, toMap
 
     , test_fromLists
     ) where
@@ -72,6 +72,8 @@ Env theta `lookup` x = Map.lookup x theta
 amb :: NdEnv var a -> [Env var a]
 amb (NdEnv envs) = Set.toAscList envs
 
+toMap :: Env var a -> Map var a
+toMap (Env env) = env
 
 
 test_fromLists :: (Ord x, Ord a) => [[(x, a)]] -> NdEnv x a

@@ -1,10 +1,17 @@
 import Data.Maybe
 
+import Control.Arrow
+
+import Data.Foldable (toList)
 import Data.Sequence (Seq)
+import Data.Map (Map)
+import qualified Data.Map as Map
 
 import qualified Text.Regex.Bird.Internal.Env as Env
 import Text.Regex.Bird.Internal.Expression
 import Text.Regex.Bird.Internal.Algorithms
+
+import Text.Regex.Bird.Match
 
 import System.Exit
 
@@ -31,6 +38,13 @@ main = do
         [] -> putStrLn "Smoke deriv: ok"
         errs -> do
             putStrLn "Smoke deriv: failure"
+            print `mapM_` errs
+            putStrLn "FAIL"
+            exitFailure
+    case catMaybes $ run_matchSmoke <$> smokeTests_match of
+        [] -> putStrLn "Smoke match: ok"
+        errs -> do
+            putStrLn "Smoke match: failure"
             print `mapM_` errs
             putStrLn "FAIL"
             exitFailure
@@ -152,4 +166,50 @@ smokeTests_deriv =
     , (Theta (Env.empty `Env.insert` ("1", "a")) (Replay "1"), 'a', [[("1", "a")]])
     -- state update is transparent to derivative for further user operations
     , (Theta (Env.empty `Env.insert` ("1", "x")) (Str "a"), 'a', [[("1", "x")]])
+    ]
+
+
+
+
+
+run_matchSmoke :: (Regex, String, [[(String, String)]])
+                -> Maybe (Regex, [Map String String], [Map String String])
+run_matchSmoke (r, str, expect) =
+    let out = fullMatches r str
+        good = Map.fromList <$> expect
+    in if length (out :: [Match String Char]) == length good -- FIXME test the actual matches
+        then Nothing
+        else Just (r, good, Map.fromList . (second toList <$>) . Map.toList . capturingGroups <$> out)
+
+smokeTests_match :: [(Regex, String, [[(String, String)]])]
+smokeTests_match =
+    -- various simple matches succeed/fail
+    [ (Bot, "", [])
+    , (Bot, "a", [])
+    , (Bot, "as", [])
+
+    , (Empty, "", [[]])
+    , (Empty, "a", [])
+    , (Empty, "aa", [])
+
+    , (Char 'a', "", [])
+    , (Char 'a', "a", [[]])
+    , (Char 'a', "aa", [])
+
+    , (Str "aa", "", [])
+    , (Str "aa", "a", [])
+    , (Str "aa", "aa", [[]])
+
+    -- alternates
+    , (Alt (Char 'a') (Char 'b'), "a", [[]])
+    , (Alt (Char 'a') (Char 'b'), "b", [[]])
+    , (Alt (Char 'a') (Char 'b'), "c", [])
+
+    -- replay
+    , (Seq (Capture "1" "" $ Alt (Char 'a') (Char 'b')) (Replay "1"), "aa", [[("1", "a")]])
+    , (Seq (Capture "1" "" $ Alt (Char 'a') (Char 'b')) (Replay "1"), "bb", [[("1", "b")]])
+    , (Seq (Capture "1" "" $ Alt (Char 'a') (Char 'b')) (Replay "1"), "ab", [])
+    , (Seq (Capture "1" "" $ Alt (Char 'a') (Char 'b')) (Replay "1"), "ba", [])
+
+    -- TODO more
     ]
