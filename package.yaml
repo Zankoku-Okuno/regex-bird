@@ -24,6 +24,7 @@ dependencies:
 - containers >= 0.5.8
 - ListLike >= 4 && < 5
 - text >= 1 && < 2
+- symbol >= 0.2
 
 default-extensions:
 - OverloadedStrings

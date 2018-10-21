@@ -1,4 +1,10 @@
-module Text.Regex.Bird.Match where
+module Text.Regex.Bird.Match
+    ( Match(..)
+    , fullMatches
+    , prefixMatches
+    , infixMatches
+    , suffixMatches
+    ) where
 
 import Prelude hiding (length, splitAt, concatMap)
 
