@@ -21,24 +21,14 @@ data GRegex x str a =
     deriving (Show, Eq, Ord)
 
 
--- syntactic sugar
--- TODO optional, plus, bounded repetition
-
-pattern Empty :: (ListLike t a) => GRegex x t a
-pattern Empty = Str Nil
-
-pattern Char :: (ListLike t a) => a -> GRegex x t a
-pattern Char c = Str (c :<| Nil)
-
-
 -- optimizing patterns
 
 pattern Seq :: (ListLike t a) => GRegex x t a -> GRegex x t a -> GRegex x t a
 pattern Seq r r' <- Seq_ r r'
     where
     Seq Bot _ = Bot
-    Seq Empty r' = r'
-    Seq r Empty = r
+    Seq (Str Nil) r' = r'
+    Seq r (Str Nil) = r
     Seq (Str w) (Str w') = Str (w <> w')
     -- TODO capture, theta
     Seq r r' = Seq_ r r'

@@ -25,7 +25,7 @@ nu _ Bot = Env.no
 -- ν_θ(ε) = 1_θ
 -- ν_θ(c) = 0
 -- corollary: ν_θ(cA*) = 0
-nu θ Empty = Env.one θ
+nu θ (Str Nil) = Env.one θ
 nu _ (Str _) = Env.no
 -- ν_θ(r r') = Σ_{θ' ∈ ν_θ(r)} Σ_{θ'' ∈ ν_{θ'}(r')} 1_{θ''}
 nu θ (Seq r r') = Env.many $ [θ'' | θ' <- Env.amb (nu θ r), θ'' <- Env.amb (nu θ' r')]
@@ -51,7 +51,7 @@ d _ _ Bot = Bot
 --          = ⊥      otherwise
 -- corollary: ∂_a^θ(cA*) = A*    if a = c
 --                       = ⊥     otherwise
-d _ _ Empty = Bot
+d _ _ (Str Nil) = Bot
 d _ a (Str (c :<| w)) = if a == c then Str w else Bot
 -- ∂_a^θ(r r') = ∂_a^θ(r)r' | Σ_{θ' ∈ ν_θ(r)} θ': ∂_a^{θ ∪⃯ θ'}(r')
 d θ a (Seq r r') = foldr Alt
