@@ -1,36 +1,47 @@
 module Text.Regex.Bird.Match where
 
-import Data.Sequence (Seq((:<|), (:|>)))
-import qualified Data.Sequence as Seq
+import Prelude hiding (length, splitAt, concatMap)
+
 import Data.Map (Map)
 import qualified Data.Map as Map
 
+import Text.Regex.Bird.Internal.List
 import qualified Text.Regex.Bird.Internal.Env as Env
 import Text.Regex.Bird.Internal.Expression
 import Text.Regex.Bird.Internal.Algorithms
 
 
-data Match x a = Match
-    { wholeMatch :: Seq a
-    , capturingGroups :: Map x (Seq a)
+data Match x t a = Match
+    { wholeMatch :: t
+    , capturingGroups :: Map x t
     }
 
 
-fullMatches :: (Ord x, Ord a) => GRegex x a -> [a] -> [Match x a]
+fullMatches :: (Regexable x t a) => GRegex x t a -> t -> [Match x t a]
 fullMatches r input = mkMatch <$> Env.amb (go r input)
     where
-    go r [] = nu Env.empty r
-    go r (c:str) = go (d Env.empty c r) str
+    go r Nil = nu Env.empty r
+    go r (c :<| str) = go (d Env.empty c r) str
     mkMatch env = Match
-        { wholeMatch = Seq.fromList input
+        { wholeMatch = input
         , capturingGroups = Env.toMap env
         }
 
-prefixMatches :: (Ord x, Ord a) => GRegex x a -> [a] -> [(Match x a, [a])]
+prefixMatches :: (Regexable x t a) => GRegex x t a -> t -> [(Match x t a, t)]
 prefixMatches r input = concatMap match splits
     where
     splits = [splitAt i input | i <- [0 .. length input]]
-    match (pre, post) = (, post) <$> fullMatches r pre
+    match (str, post) = (, post) <$> fullMatches r str
 
--- TODO suffixMatches
--- TODO infixMatches
+infixMatches :: (Regexable x t a) => GRegex x t a -> t -> [(t, Match x t a, t)]
+infixMatches r input = concatMap match splits
+    where
+    splits = [splitAt i input | i <- [0 .. length input]]
+    match (pre, str) = flatTriple pre <$> prefixMatches r str
+    flatTriple a (b, c) = (a, b, c)
+
+suffixMatches :: (Regexable x t a) => GRegex x t a -> t -> [(t, Match x t a)]
+suffixMatches r input = concatMap match splits
+    where
+    splits = [splitAt i input | i <- [0 .. length input]]
+    match (pre, str) = (pre, ) <$> fullMatches r str

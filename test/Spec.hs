@@ -1,9 +1,6 @@
 import Data.Maybe
 
-import Control.Arrow
-
-import Data.Foldable (toList)
-import Data.Sequence (Seq)
+import Data.Text (Text)
 import Data.Map (Map)
 import qualified Data.Map as Map
 
@@ -15,10 +12,12 @@ import Text.Regex.Bird.Match
 
 import System.Exit
 
-
-type Regex = GRegex String Char
-type Env = Env.Env String (Seq Char)
-type NdEnv = Env.NdEnv String (Seq Char)
+type Id = String
+type T = Text
+type C = Char
+type Regex = GRegex Id T C
+type Env = Env.Env Id T
+type NdEnv = Env.NdEnv Id T
 
 main :: IO ()
 main = do
@@ -54,7 +53,7 @@ main = do
 
 
 
-run_nuSmoke :: (Regex, [[(String, (Seq Char))]]) -> Maybe (Regex, NdEnv, NdEnv)
+run_nuSmoke :: (Regex, [[(Id, T)]]) -> Maybe (Regex, NdEnv, NdEnv)
 run_nuSmoke (r, expect) =
     let out = nu Env.empty r
         good = Env.test_fromLists expect
@@ -62,7 +61,7 @@ run_nuSmoke (r, expect) =
         then Nothing
         else Just (r, good, out)
 
-smokeTests_nu :: [(Regex, [[(String, (Seq Char))]])]
+smokeTests_nu :: [(Regex, [[(Id, T)]])]
 smokeTests_nu =
     [ (Bot, []) -- ⊥ does not accept empty
     
@@ -132,7 +131,7 @@ smokeTests_nu =
 
 
 
-run_derivSmoke :: (Regex, Char, [[(String, (Seq Char))]]) -> Maybe (Regex, NdEnv, NdEnv)
+run_derivSmoke :: (Regex, C, [[(Id, T)]]) -> Maybe (Regex, NdEnv, NdEnv)
 run_derivSmoke (r, c, expect) =
     let θ = Env.empty
         out = nu θ (d θ c r)
@@ -141,7 +140,7 @@ run_derivSmoke (r, c, expect) =
         then Nothing
         else Just (r, good, out)
 
-smokeTests_deriv :: [(Regex, Char, [[(String, (Seq Char))]])]
+smokeTests_deriv :: [(Regex, C, [[(Id, T)]])]
 smokeTests_deriv =
     -- various simple derivatives are ⊥
     [ (Bot, 'a', [])
@@ -189,16 +188,16 @@ smokeTests_deriv =
 
 
 
-run_matchSmoke :: (Regex, String, [[(String, String)]])
-                -> Maybe (Regex, [Map String String], [Map String String])
+run_matchSmoke :: (Regex, T, [[(Id, T)]])
+                -> Maybe (Regex, [Map Id T], [Map Id T])
 run_matchSmoke (r, str, expect) =
     let out = fullMatches r str
         good = Map.fromList <$> expect
-    in if length (out :: [Match String Char]) == length good -- FIXME test the actual matches
+    in if length out == length good -- FIXME test the actual matches
         then Nothing
-        else Just (r, good, Map.fromList . (second toList <$>) . Map.toList . capturingGroups <$> out)
+        else Just (r, good, capturingGroups <$> out)
 
-smokeTests_match :: [(Regex, String, [[(String, String)]])]
+smokeTests_match :: [(Regex, T, [[(Id, T)]])]
 smokeTests_match =
     -- various simple matches succeed/fail
     [ (Bot, "", [])

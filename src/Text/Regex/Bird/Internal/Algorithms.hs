@@ -1,8 +1,8 @@
 module Text.Regex.Bird.Internal.Algorithms where
 
-import Data.Sequence (Seq((:<|), (:|>)))
-import qualified Data.Sequence as Seq
+import Prelude hiding (foldr, null)
 
+import Text.Regex.Bird.Internal.List
 import Text.Regex.Bird.Internal.Env (Env, NdEnv)
 import qualified Text.Regex.Bird.Internal.Env as Env
 import Text.Regex.Bird.Internal.Expression
@@ -19,7 +19,7 @@ import Text.Regex.Bird.Internal.Expression
     Replaying a variable will accept empty only when that variable is captured as empty.
     The rest of the time, we need to pass along the environment as if pattern matching were occuring.
 -}
-nu :: (Ord x, Ord a) => Env x (Seq a) -> GRegex x a -> NdEnv x (Seq a)
+nu :: (Regexable x t a) => Env x t -> GRegex x t a -> NdEnv x t
 -- ν_θ(⊥) = 0
 nu _ Bot = Env.no
 -- ν_θ(ε) = 1_θ
@@ -43,7 +43,7 @@ nu θ (Theta θ' r) = nu (θ `Env.update` θ') r
 
 
 {-| Take the derivative w.r.t. a single input character. -}
-d :: (Ord x, Ord a) => Env x (Seq a) -> a -> GRegex x a -> GRegex x a
+d :: (Regexable x t a) => Env x t -> a -> GRegex x t a -> GRegex x t a
 -- ∂_a^θ(⊥) = ⊥
 d _ _ Bot = Bot
 -- ∂_a^θ(ε) = ⊥

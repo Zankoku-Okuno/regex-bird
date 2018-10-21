@@ -29,52 +29,52 @@ import Data.Set (Set)
 import qualified Data.Set as Set
 
 
-newtype NdEnv var a = NdEnv (Set (Env var a))
+newtype NdEnv var t = NdEnv (Set (Env var t))
     deriving (Eq, Show)
 
-newtype Env var a = Env (Map var a)
+newtype Env var t = Env (Map var t)
     deriving (Eq, Ord, Show)
 
 
 
-empty :: Env var a
+empty :: Env var t
 empty = Env Map.empty
 
-ok, no :: NdEnv var a
+ok, no :: NdEnv var t
 ok = NdEnv $ Set.singleton empty
 no = NdEnv Set.empty
 
-one :: (Ord var, Ord a) => Env var a -> NdEnv var a
+one :: (Ord var, Ord t) => Env var t -> NdEnv var t
 one = many . (:[])
 
-many :: (Ord var, Ord a) => [Env var a] -> NdEnv var a
+many :: (Ord var, Ord t) => [Env var t] -> NdEnv var t
 many = NdEnv . Set.fromList
 
 {-| Extend an environment with one extra binding.
     If applicable, the prior value at that variable is replaced. -}
-insert :: (Ord var) => Env var a -> (var, a) -> Env var a
+insert :: (Ord var) => Env var t -> (var, t) -> Env var t
 insert (Env theta) (x, v) = Env $ Map.insert x v theta
 
 {-| Right-biased union of two environments. -}
-update :: (Ord var) => Env var a -> Env var a -> Env var a
+update :: (Ord var) => Env var t -> Env var t -> Env var t
 update (Env theta) (Env theta') = Env $ theta' `Map.union` theta
 
 {-| Union of options from two non-deterministic environments. -}
-join :: (Ord var, Ord a) => NdEnv var a -> NdEnv var a -> NdEnv var a
+join :: (Ord var, Ord t) => NdEnv var t -> NdEnv var t -> NdEnv var t
 join (NdEnv thetas) (NdEnv thetas') = NdEnv $ thetas `Set.union` thetas'
 
 -- FIXME documentation
 -- TODO is this how I want to do it, or just return a Maybe?
-lookup :: (Ord var) => Env var a -> var -> Maybe a
+lookup :: (Ord var) => Env var t -> var -> Maybe t
 Env theta `lookup` x = Map.lookup x theta
 
 {-| Iterate over possible environments. -}
-amb :: NdEnv var a -> [Env var a]
+amb :: NdEnv var t -> [Env var t]
 amb (NdEnv envs) = Set.toAscList envs
 
-toMap :: Env var a -> Map var a
+toMap :: Env var t -> Map var t
 toMap (Env env) = env
 
 
-test_fromLists :: (Ord x, Ord a) => [[(x, a)]] -> NdEnv x a
+test_fromLists :: (Ord x, Ord t) => [[(x, t)]] -> NdEnv x t
 test_fromLists envs = NdEnv . Set.fromList $ Env . Map.fromList <$> envs

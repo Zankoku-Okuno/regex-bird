@@ -22,11 +22,15 @@ description:         Please see the README on GitHub at <https://github.com/Zank
 dependencies:
 - base >= 4.7 && < 5
 - containers >= 0.5.8
+- ListLike >= 4 && < 5
+- text >= 1 && < 2
 
 default-extensions:
 - OverloadedStrings
 - PatternSynonyms
 - TupleSections
+- ViewPatterns
+- ConstraintKinds
 
 library:
   source-dirs: src
