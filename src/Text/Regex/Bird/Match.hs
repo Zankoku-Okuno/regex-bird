@@ -24,13 +24,14 @@ data Match x t a = Match
 
 
 fullMatches :: (Regexable x t a) => GRegex x t a -> t -> [Match x t a]
-fullMatches r input = mkMatch <$> Env.amb (go r input)
+fullMatches r input = mkMatches $ go r input
     where
     go r Nil = nu Env.empty r
     go r (c :<| str) = go (d Env.empty c r) str
+    mkMatches envs = mkMatch <$> Env.toMaps envs
     mkMatch env = Match
         { wholeMatch = input
-        , capturingGroups = Env.toMap env
+        , capturingGroups = env
         }
 
 prefixMatches :: (Regexable x t a) => GRegex x t a -> t -> [(Match x t a, t)]
