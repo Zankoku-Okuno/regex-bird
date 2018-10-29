@@ -43,6 +43,9 @@ This library implements regular expressions using derivatives, but it also exten
 This allows some context-sensitivity, but it is severely limited so it cannot recognize even context-free languages in general.
 
 
+
+
+
 ## Contributing
 
 We welcome bug reports at [issue tracker](https://github.com/Zankoku-Okuno/regex-bird/issues).
@@ -109,4 +112,11 @@ The only time when `nu` uses the input capturing group for itself is when it enc
 
 #### User-facing API
 
+The user-facing API is performs two duties.
+The first exposes the abstract syntax and matching algorithms, whereas the second provides convenience of importing.
+
 TODO
+
+For ease of importing, the entire generic interface is exposed in the `Text.Regex.Bird` module.
+Then, because most projects will only use one form of text type (or pass on the choice), there are a number of pre-built specializations of the `GRegex` type.
+These are `Text.Regex.Bird.{String,Text,Text.Lazy}` for now, but that could expand easily with demand.
