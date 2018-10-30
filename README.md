@@ -115,7 +115,15 @@ The only time when `nu` uses the input capturing group for itself is when it enc
 The user-facing API is performs two duties.
 The first exposes the abstract syntax and matching algorithms, whereas the second provides convenience of importing.
 
-TODO
+Again we've implemented the abstract syntax in its own module `Text.Regex.Bird.Patterns`.
+That module only defines patterns which delegate their work to the internal `Expression` module.
+Each of these patterns additionally restrict their type with the `Regexable` typeclass so that it is not possible to create regexes that can't be used with regex algorithms.
+
+The regex algorithms defined in `Text.Regex.Bird.Match` operate between regexes and strings.
+These algorithms return all possible matches within the string, with each function varying by whether characters may be skipped on the start and/or end of the input string.
+The idea with returning all possible matches is that the user should be able to define their own criteria for which matches are the best rather than have it enforced upon them.
+Thankfully, Haskell is a lazy language, and these results may be consumed as a stream.
+Even the `fullMatch` algorithm can produce multiple matches (as a corollary, multiple matches can be found in the same place), as capturing groups may differ even between matches of the same string.
 
 For ease of importing, the entire generic interface is exposed in the `Text.Regex.Bird` module.
 Then, because most projects will only use one form of text type (or pass on the choice), there are a number of pre-built specializations of the `GRegex` type.
