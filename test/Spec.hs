@@ -77,11 +77,17 @@ smokeTests_nu =
     , (Seq (Str "a") (Str ""), [])
     , (Seq (Str "a") (Str "b"), [])
     
-    -- alternation accept is either does
+    -- alternation accepts if either does
     , (Alt (Str "") (Str ""), [[]])
     , (Alt (Str "") (Str "b"), [[]])
     , (Alt (Str "a") (Str ""), [[]])
     , (Alt (Str "a") (Str "b"), [])
+
+    -- intersection accepts if both do
+    , (And (Str "") (Str ""), [[]])
+    , (And (Str "") (Str "b"), [])
+    , (And (Str "a") (Str ""), [])
+    , (And (Str "a") (Str "b"), [])
 
     -- star always accepts empty
     , (Star (Str ""), [[]])
@@ -158,6 +164,11 @@ smokeTests_deriv =
     , (Alt (Str "a") (Str "b"), 'b', [[]])
     , (Alt (Str "a") (Str "b"), 'c', [])
 
+    -- intersection must accept both
+    , (And (Str "a") (Str "a"), 'a', [[]])
+    , (And (Str "a") (Str "b"), 'a', [])
+    , (And (Str "b") (Str "a"), 'a', [])
+
     -- Star: r* equivalent to rr* when input not empty
     , (Star (Str "a"), 'a', [[]])
     , (Star (Str "a"), 'c', [])
@@ -220,6 +231,11 @@ smokeTests_match =
     , (Alt (Str "a") (Str "b"), "a", [[]])
     , (Alt (Str "a") (Str "b"), "b", [[]])
     , (Alt (Str "a") (Str "b"), "c", [])
+
+    -- intersections
+    , (And (Str "a") (Star $ Str "a"), "aa", [])
+    , (And (Str "aa") (Star $ Str "a"), "aa", [[]])
+    , (And (Str "aaa") (Star $ Str "a"), "aa", [])
 
     -- star
     , (Star (Str "a"), "", [[]])

@@ -14,6 +14,7 @@ module Text.Regex.Bird.Patterns
     , pattern Str
     , pattern Seq
     , pattern Alt
+    , pattern And
     , pattern Star
     , pattern Capture
     , pattern Replay
@@ -44,6 +45,10 @@ pattern Seq r r' = I.Seq r r'
 {-| A compound regex that matches if either of the given regeces match. -}
 pattern Alt :: (Regexable x t a) => GRegex x t a -> GRegex x t a -> GRegex x t a
 pattern Alt r r' = I.Alt r r'
+
+{-| A compound regex that matches when both of the given regeces match. -}
+pattern And :: (Regexable x t a) => GRegex x t a -> GRegex x t a -> GRegex x t a
+pattern And r r' = I.And r r'
 
 {-| A regex that matches zero or more repetitions of the given regex. -}
 pattern Star :: (Regexable x t a) => GRegex x t a -> GRegex x t a

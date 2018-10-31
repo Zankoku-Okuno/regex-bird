@@ -15,6 +15,7 @@ module Text.Regex.Bird.Internal.Expression
     -- ** Optimizing Patterns
     , pattern Seq
     , pattern Alt
+    , pattern And
     , pattern Theta
     ) where
 
@@ -50,6 +51,8 @@ data GRegex x str a =
     -- | Match either of the two given patterns (written @r|r'@).
     --   See 'Alt' for an optimizing version.
     | Alt_ (GRegex x str a) (GRegex x str a)
+    -- | Match both of the given patterns
+    | And_ (GRegex x str a) (GRegex x str a)
     -- | Match zero or more of the given pattern (written @r*@).
     | Star (GRegex x str a)
     -- TODO complement, intersection, character classes
@@ -97,6 +100,18 @@ pattern Alt r r' <- Alt_ r r'
     Alt Bot r' = r'
     Alt r Bot = r
     Alt r r' = Alt_ r r'
+
+{-| Optimizing pattern for matching both of two regexes.
+    Use this in place of 'And_'.
+
+    - intersection with @⊥@ always fails
+-}
+pattern And :: GRegex x t a -> GRegex x t a -> GRegex x t a
+pattern And r r' <- And_ r r'
+    where
+    And Bot r' = Bot
+    And r Bot = Bot
+    And r r' = And_ r r'
 
 -- TODO optimizing patterns: Capture
 
