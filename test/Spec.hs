@@ -63,20 +63,22 @@ run_nuSmoke (r, expect) =
 
 smokeTests_nu :: [(Regex, [[(Id, T)]])]
 smokeTests_nu =
-    [ (Bot, []) -- ⊥ does not accept empty
-    
+    [ (Any, [])
+
+    , (Bot, []) -- ⊥ does not accept empty
+
     , (Str "", [[]]) -- ε accepts empty
-    
+
      -- literals do not accept empty
     , (Str "x", [])
     , (Str "xyz", [])
-    
+
     -- sequence only accepts empty if both do
     , (Seq (Str "") (Str ""), [[]])
     , (Seq (Str "") (Str "b"), [])
     , (Seq (Str "a") (Str ""), [])
     , (Seq (Str "a") (Str "b"), [])
-    
+
     -- alternation accepts if either does
     , (Alt (Str "") (Str ""), [[]])
     , (Alt (Str "") (Str "b"), [[]])
@@ -159,6 +161,7 @@ smokeTests_deriv =
     , (Str "x", 'a', [])
 
     -- accept a single character
+    , (Any, 'a', [[]])
     , (Str "a", 'a', [[]])
     , (Str "aa", 'a', []) -- because it's still expecting another 'a'
 
@@ -220,7 +223,12 @@ run_matchSmoke (r, str, expect) =
 smokeTests_match :: [(Regex, T, [[(Id, T)]])]
 smokeTests_match =
     -- various simple matches succeed/fail
-    [ (Bot, "", [])
+    [ (Any, "", [])
+    , (Any, "a", [[]])
+    , (Any, "b", [[]])
+    , (Any, "as", [])
+
+    , (Bot, "", [])
     , (Bot, "a", [])
     , (Bot, "as", [])
 
@@ -253,14 +261,14 @@ smokeTests_match =
     , (Star (Str "a"), "aaa", [[]])
 
     -- not
-    , (Not (Seq (Star $ Str "a") $ Seq (Str "b") (Star $ Str "a")), "", [[]])
-    , (Not (Seq (Star $ Str "a") $ Seq (Str "b") (Star $ Str "a")), "aaa", [[]])
-    , (Not (Seq (Star $ Str "a") $ Seq (Str "b") (Star $ Str "a")), "bbb", [[]])
-    , (Not (Seq (Star $ Str "a") $ Seq (Str "b") (Star $ Str "a")), "ccc", [[]])
-    , (Not (Seq (Star $ Str "a") $ Seq (Str "b") (Star $ Str "a")), "ba", [])
-    , (Not (Seq (Star $ Str "a") $ Seq (Str "b") (Star $ Str "a")), "aba", [])
-    , (Not (Seq (Star $ Str "a") $ Seq (Str "b") (Star $ Str "a")), "aaba", [])
-    , (Not (Seq (Star $ Str "a") $ Seq (Str "b") (Star $ Str "a")), "aabaa", [])
+    , (Not (Seq (Star Any) $ Seq (Str "b") (Star Any)), "", [[]])
+    , (Not (Seq (Star Any) $ Seq (Str "b") (Star Any)), "aaa", [[]])
+    , (Not (Seq (Star Any) $ Seq (Str "b") (Star Any)), "bbb", [])
+    , (Not (Seq (Star Any) $ Seq (Str "b") (Star Any)), "ccc", [[]])
+    , (Not (Seq (Star Any) $ Seq (Str "b") (Star Any)), "ba", [])
+    , (Not (Seq (Star Any) $ Seq (Str "b") (Star Any)), "aba", [])
+    , (Not (Seq (Star Any) $ Seq (Str "b") (Star Any)), "aaba", [])
+    , (Not (Seq (Star Any) $ Seq (Str "b") (Star Any)), "aabaa", [])
 
     -- replay
     , (Seq (Capture "1" "" $ Alt (Str "a") (Str "b")) (Replay "1"), "aa", [[("1", "a")]])

@@ -36,6 +36,7 @@ import Text.Regex.Bird.Internal.Expression
     since empty-accepting sub-patterns might modify the capturing gruops for later sub-patterns.
 
 @
+ν_θ(⊤)         = 0
 ν_θ(⊥)         = 0
 ν_θ(ε)         = {θ}
 ν_θ(c)         = 0
@@ -60,6 +61,7 @@ import Text.Regex.Bird.Internal.Expression
 @
 -}
 nu :: (Regexable x t a) => Env x t -> GRegex x t a -> NdEnv x t
+nu _ Any = Env.no
 nu _ Bot = Env.no
 nu θ (Str Nil) = Env.one θ
 nu _ (Str _) = Env.no
@@ -78,6 +80,7 @@ nu θ (Theta θ' r) = nu (θ `Env.update` θ') r
     The derivatives are defined as follows:
 
 @
+∂_a^θ(⊤)       = ε
 ∂_a^θ(⊥)       = ⊥
 ∂_a^θ(ε)       = ⊥
 ∂_a^θ(c)     { = ε      if a = c
@@ -103,6 +106,7 @@ nu θ (Theta θ' r) = nu (θ `Env.update` θ') r
 @
 -}
 d :: (Regexable x t a) => Env x t -> a -> GRegex x t a -> GRegex x t a
+d _ _ Any = Str empty
 d _ _ Bot = Bot
 d _ _ (Str Nil) = Bot
 d _ a (Str (c :<| w)) = if a == c then Str w else Bot

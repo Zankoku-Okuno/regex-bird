@@ -40,8 +40,10 @@ import qualified Text.Regex.Bird.Internal.Env as Env
     They are not meant to be used outside of this module; use the non-underscore pattern synonyms instead.
 -}
 data GRegex x str a =
+    -- | A pattern that matches any character (written @⊤@)
+      Any
     -- | A pattern that does not match anything, even empty string (written @⊥@).
-      Bot
+    | Bot
     -- | A pattern matching a specific sequence of characters
     --   (written @ε@ for empty or @cA*@ for non-empty starting with @c@).
     | Str str

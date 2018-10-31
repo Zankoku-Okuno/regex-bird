@@ -30,6 +30,10 @@ import qualified Text.Regex.Bird.Internal.Expression as I
 import Text.Regex.Bird.Internal.Expression (GRegex)
 
 
+{-| A regex that matches any single character. -}
+pattern Any :: (Regexable x t a) => GRegex x t a
+pattern Any = I.Any
+
 {-| A regex that never matches. -}
 pattern Bot :: (Regexable x t a) => GRegex x t a
 pattern Bot = I.Bot
