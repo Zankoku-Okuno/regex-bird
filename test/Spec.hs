@@ -93,6 +93,11 @@ smokeTests_nu =
     , (Star (Str ""), [[]])
     , (Star (Str "a"), [[]])
 
+    -- complement accepts backwardsly
+    , (Not (Str ""), [])
+    , (Not (Str "a"), [[]])
+    , (Not Bot, [[]])
+
     -- capture passes through with/without group
     , (Capture "x" "" (Str ""), [[("x", "")]])
     , (Capture "x" "" (Str "a"), [])
@@ -175,6 +180,10 @@ smokeTests_deriv =
     , (Star (Alt (Str "a") (Str "b")), 'a', [[]])
     , (Star (Alt (Str "a") (Str "b")), 'b', [[]])
 
+    -- complement accepts backwardsly
+    , (Not (Str "a"), 'a', [])
+    , (Not (Str "b"), 'a', [[]])
+
     -- capture records input
     , (Capture "1" "" (Str "a"), 'a', [[("1", "a")]])
 
@@ -242,6 +251,16 @@ smokeTests_match =
     , (Star (Str "a"), "a", [[]])
     , (Star (Str "a"), "aa", [[]])
     , (Star (Str "a"), "aaa", [[]])
+
+    -- not
+    , (Not (Seq (Star $ Str "a") $ Seq (Str "b") (Star $ Str "a")), "", [[]])
+    , (Not (Seq (Star $ Str "a") $ Seq (Str "b") (Star $ Str "a")), "aaa", [[]])
+    , (Not (Seq (Star $ Str "a") $ Seq (Str "b") (Star $ Str "a")), "bbb", [[]])
+    , (Not (Seq (Star $ Str "a") $ Seq (Str "b") (Star $ Str "a")), "ccc", [[]])
+    , (Not (Seq (Star $ Str "a") $ Seq (Str "b") (Star $ Str "a")), "ba", [])
+    , (Not (Seq (Star $ Str "a") $ Seq (Str "b") (Star $ Str "a")), "aba", [])
+    , (Not (Seq (Star $ Str "a") $ Seq (Str "b") (Star $ Str "a")), "aaba", [])
+    , (Not (Seq (Star $ Str "a") $ Seq (Str "b") (Star $ Str "a")), "aabaa", [])
 
     -- replay
     , (Seq (Capture "1" "" $ Alt (Str "a") (Str "b")) (Replay "1"), "aa", [[("1", "a")]])

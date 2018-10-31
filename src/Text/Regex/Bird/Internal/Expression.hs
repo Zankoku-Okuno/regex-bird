@@ -51,11 +51,13 @@ data GRegex x str a =
     -- | Match either of the two given patterns (written @r|r'@).
     --   See 'Alt' for an optimizing version.
     | Alt_ (GRegex x str a) (GRegex x str a)
-    -- | Match both of the given patterns
+    -- | Match both of the given patterns (written @r&r'@)
     | And_ (GRegex x str a) (GRegex x str a)
     -- | Match zero or more of the given pattern (written @r*@).
     | Star (GRegex x str a)
-    -- TODO complement, intersection, character classes
+    -- | Match exactly when the given regex does not (written @^r@)
+    | Not (GRegex x str a)
+    -- TODO character classes
     -- | Match the given regex while capturing input into the capture-so-far string with the given group name
     --   (written @(?x=A*.r)@, or @(?x.r)@ when @A*@ is empty).
     --   In a user's regexes, the capture-so-far string will always be empty;

@@ -36,17 +36,19 @@ import Text.Regex.Bird.Internal.Expression
     since empty-accepting sub-patterns might modify the capturing gruops for later sub-patterns.
 
 @
-ν_θ(⊥)      = 0
-ν_θ(ε)      = {θ}
-ν_θ(c)      = 0
-ν_θ(r r')   = Σ_{θ' ∈ ν_θ(r)} Σ_{θ'' ∈ ν_{θ'}(r')} {θ''}
-ν_θ(r|r')   = ν_θ(r) ∪ ν_θ(r')
-ν_θ(r&r')   = Σ_{θ' ∈ ν_θ(r)} Σ_{θ'' ∈ ν_{θ}(r')} {θ''}
-ν_θ(r*)     = {θ}
-ν_θ(?x=A*.r) = Σ_{θ' ∈ ν_θ(r)} θ' ∪⃯ {x ↦ A*}
-ν_θ(=x)    { = 1     if θ(x) = ""
-          { = 0     otherwise
-ν_θ(θ': r)  = ν_{θ ∪⃯ θ'}(r)
+ν_θ(⊥)         = 0
+ν_θ(ε)         = {θ}
+ν_θ(c)         = 0
+ν_θ(r r')      = Σ_{θ' ∈ ν_θ(r)} Σ_{θ'' ∈ ν_{θ'}(r')} {θ''}
+ν_θ(r|r')      = ν_θ(r) ∪ ν_θ(r')
+ν_θ(r&r')      = Σ_{θ' ∈ ν_θ(r)} Σ_{θ'' ∈ ν_{θ}(r')} {θ''}
+ν_θ(^r)      { = {θ}    if ν_θ(r) = 0
+             { = 0      otherwise
+ν_θ(r*)        = {θ}
+ν_θ(?x=A*.r)   = Σ_{θ' ∈ ν_θ(r)} θ' ∪⃯ {x ↦ A*}
+ν_θ(=x)      { = {θ}   if θ(x) = ""
+             { = 0     otherwise
+ν_θ(θ': r)     = ν_{θ ∪⃯ θ'}(r)
 @
 
     Because we are using a slightly more efficient encoding, some patterns below
@@ -65,6 +67,7 @@ nu θ (Seq r r') = Env.many [θ'' | θ' <- Env.amb (nu θ r), θ'' <- Env.amb (n
 nu θ (Alt r r') = Env.join (nu θ r) (nu θ r')
 nu θ (And r r') = Env.many [θ' `Env.update` θ'' | θ' <- Env.amb (nu θ r), θ'' <- Env.amb (nu θ r')]
 nu θ (Star r) = Env.one θ
+nu θ (Not r) = if (null . Env.amb) (nu θ r) then Env.one θ else Env.no
 nu θ (Capture x str r) = Env.many $ [θ' `Env.insert` (x, str) | θ' <- Env.amb (nu θ r) ]
 nu θ (Replay x) = if (null <$> θ `Env.lookup` x) == Just True then Env.ok else Env.no
 nu θ (Theta θ' r) = nu (θ `Env.update` θ') r
@@ -75,17 +78,18 @@ nu θ (Theta θ' r) = nu (θ `Env.update` θ') r
     The derivatives are defined as follows:
 
 @
-∂_a^θ(⊥)      = ⊥
-∂_a^θ(ε)      = ⊥
-∂_a^θ(c)    { = ε      if a = c
-            { = ⊥      otherwise
-∂_a^θ(r r')   = ∂_a^θ(r)r' | Σ_{θ' ∈ ν_θ(r)} θ': ∂_a^{θ ∪⃯ θ'}(r')
-∂_a^θ(r|r')   = ∂_a^θ(r) | ∂_a^θ(r')
-∂_a^θ(r&r')   = ∂_a^θ(r) & ∂_a^θ(r')
-∂_a^θ(r*)     = ∂_a^θ(r) r*
+∂_a^θ(⊥)       = ⊥
+∂_a^θ(ε)       = ⊥
+∂_a^θ(c)     { = ε      if a = c
+             { = ⊥      otherwise
+∂_a^θ(r r')    = ∂_a^θ(r)r' | Σ_{θ' ∈ ν_θ(r)} θ': ∂_a^{θ ∪⃯ θ'}(r')
+∂_a^θ(r|r')    = ∂_a^θ(r) | ∂_a^θ(r')
+∂_a^θ(r&r')    = ∂_a^θ(r) & ∂_a^θ(r')
+∂_a^θ(r*)      = ∂_a^θ(r) r*
+∂_a^θ(^r)      = ^(∂_a^θ(r))
 ∂_a^θ(?x=A*.r) = (?x=A*a. ∂_a^θ(r))
 ∂_a^θ(=x)    { = ∂_a^θ(θ(x))   if x ∈ dom(θ)
-            { = ⊥             otherwise
+             { = ⊥             otherwise
 ∂_a^θ(θ': r)  = θ': ∂_a^{θ ∪⃯ θ'}(r)
 @
 
@@ -108,6 +112,7 @@ d θ a (Seq r r') = foldr Alt
 d θ a (Alt r r') = Alt (d θ a r) (d θ a r')
 d θ a (And r r') = And (d θ a r) (d θ a r')
 d θ a (Star r) = Seq (d θ a r) (Star r)
+d θ a (Not r) = Not (d θ a r)
 d θ a (Capture x w r) = Capture x (w :|> a) (d θ a r)
 d θ a (Replay x) = maybe Bot (\w -> d θ a (Str w)) $ θ `Env.lookup` x
 d θ a (Theta θ' r) = Theta θ' $ d (θ `Env.update` θ') a r

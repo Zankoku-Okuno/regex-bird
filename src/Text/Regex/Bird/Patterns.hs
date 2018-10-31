@@ -54,6 +54,14 @@ pattern And r r' = I.And r r'
 pattern Star :: (Regexable x t a) => GRegex x t a -> GRegex x t a
 pattern Star r = I.Star r
 
+
+{-| A regex that matches only when the given regex does not match.
+
+    Capturing groups defined by the inner regex are erased by this operator if they attempt to escape.
+-}
+pattern Not :: (Regexable x t a) => GRegex x t a -> GRegex x t a
+pattern Not r = I.Not r
+
 {-| A regex that matches exactly when the given regex does,
     but also defines a capturing group. -}
 pattern Capture :: (Regexable x t a) => x -> GRegex x t a -> GRegex x t a
