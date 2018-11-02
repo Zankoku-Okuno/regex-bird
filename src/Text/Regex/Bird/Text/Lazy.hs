@@ -1,5 +1,5 @@
 {-| Convenience module for use when your problem domain focuses on lazy 'Text'.
-    Adding this to your imports along with 'Text.Regex.Bird' is a complete
+    Adding this to your imports along with "Text.Regex.Bird" is a complete
     setup for all common regex tasks.
 -}
 module Text.Regex.Bird.Text.Lazy where

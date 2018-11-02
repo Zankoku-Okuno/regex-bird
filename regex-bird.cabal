@@ -1,0 +1,68 @@
+-- This file has been generated from package.yaml by hpack version 0.28.2.
+--
+-- see: https://github.com/sol/hpack
+--
+-- hash: 83f0144db4ec325118bb2eb6349a9132236df7b4cf3754c77237ffe45edc8494
+
+name:           regex-bird
+version:        0.0.0
+description:    Please see the README on GitHub at <https://github.com/Zankoku-Okuno/regex-bird#readme>
+homepage:       https://github.com/Zankoku-Okuno/regex-bird#readme
+bug-reports:    https://github.com/Zankoku-Okuno/regex-bird/issues
+author:         Okuno Zankoku
+maintainer:     zankoku.okuno@gmail.com
+copyright:      Okuno Zankoku
+license:        BSD3
+license-file:   LICENSE
+build-type:     Simple
+cabal-version:  >= 1.10
+extra-source-files:
+    ChangeLog.md
+    README.md
+
+source-repository head
+  type: git
+  location: https://github.com/Zankoku-Okuno/regex-bird
+
+library
+  exposed-modules:
+      Text.Regex.Bird
+      Text.Regex.Bird.Internal.Algorithms
+      Text.Regex.Bird.Internal.Env
+      Text.Regex.Bird.Internal.Expression
+      Text.Regex.Bird.Internal.List
+      Text.Regex.Bird.Match
+      Text.Regex.Bird.Patterns
+      Text.Regex.Bird.String
+      Text.Regex.Bird.Text
+      Text.Regex.Bird.Text.Lazy
+  other-modules:
+      Paths_regex_bird
+  hs-source-dirs:
+      src
+  default-extensions: OverloadedStrings PatternSynonyms TupleSections ViewPatterns ConstraintKinds
+  build-depends:
+      ListLike >=4 && <5
+    , base >=4.7 && <5
+    , containers >=0.5.8
+    , symbol >=0.2
+    , text >=1 && <2
+  default-language: Haskell2010
+
+test-suite regex-bird-test
+  type: exitcode-stdio-1.0
+  main-is: Spec.hs
+  other-modules:
+      Paths_regex_bird
+  hs-source-dirs:
+      test
+  default-extensions: OverloadedStrings PatternSynonyms TupleSections ViewPatterns ConstraintKinds
+  ghc-options: -threaded -rtsopts -with-rtsopts=-N
+  build-depends:
+      ListLike >=4 && <5
+    , base >=4.7 && <5
+    , containers >=0.5.8
+    , regex-bird
+    , symbol >=0.2
+    , text >=1 && <2
+  default-language: Haskell2010

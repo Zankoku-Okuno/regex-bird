@@ -4,21 +4,24 @@
     core syntax, and syntactic sugar.
     The core patterns can be used as constructors and deconstructors,
     but the sugar patterns are only meant to be used as constructors.
-    There are too many equivalent ways a peice of sugary pattern may be represented
+    There are too many equivalent ways a sugary pattern may be represented
     for their deconstructors to be in any way efficient, or even proven correct.
 -}
 module Text.Regex.Bird.Patterns
-    ( GRegex
-
+    ( -- * Patterns
+      GRegex
+    , pattern Any
     , pattern Bot
     , pattern Str
     , pattern Seq
     , pattern Alt
     , pattern And
     , pattern Star
+    , pattern Not
     , pattern Capture
     , pattern Replay
 
+    -- ** Sugary Patterns
     , pattern Empty
     , pattern Char
     , pattern Option

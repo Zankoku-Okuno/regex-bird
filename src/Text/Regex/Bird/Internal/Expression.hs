@@ -6,8 +6,11 @@
 
     The name "'GRegex'" stands for "generalized regex"; see 'GRegex' for what makes it general.
     It is recommended that you define a type synonyms such as
-    @type Regex = 'GRegex' 'Symbol' 'Text' 'Char'@
+    @type Regex = 'GRegex' 'Data.Symbol.Symbol' 'Data.Text.Text' 'Char'@
     in modules/packages where you regularly use the same type(s) during regex matching.
+
+    Several of 'GRegex's constructors (those ending with underscore) are sub-optimal.
+    They are not meant to be used outside of this module; use the non-underscore pattern synonyms instead.
 -}
 module Text.Regex.Bird.Internal.Expression
     ( -- * Regex Syntax
@@ -30,14 +33,11 @@ import qualified Text.Regex.Bird.Internal.Env as Env
 {-| Abstract syntax for generalized regular expressions.
 
     These regexes are generalized by the type of input and capturing group name.
-    The capturing type of group names is given by @x@.
+    The type of capturing group names is given by @x@.
     Good choices optimize for speed of comparison, such as 'Data.Symbol.Symbol'.
     The type of input is given by a list-like container type @str@ storing characters of type @a@.
     A good choice for the container type will have fast pop-front and push-back, and preferably also fast comparison.
     The type of character is likely domain-driven, but fast equality testing is both useful and likely to already exist.
-
-    Several of these constructors (those ending with underscore) are sub-optimal.
-    They are not meant to be used outside of this module; use the non-underscore pattern synonyms instead.
 -}
 data GRegex x str a =
     -- | A pattern that matches any character (written @⊤@)
@@ -53,11 +53,12 @@ data GRegex x str a =
     -- | Match either of the two given patterns (written @r|r'@).
     --   See 'Alt' for an optimizing version.
     | Alt_ (GRegex x str a) (GRegex x str a)
-    -- | Match both of the given patterns (written @r&r'@)
+    -- | Match both of the given patterns (written @r&r'@).
+    --   See 'And' for an optimizing version.
     | And_ (GRegex x str a) (GRegex x str a)
     -- | Match zero or more of the given pattern (written @r*@).
     | Star (GRegex x str a)
-    -- | Match exactly when the given regex does not (written @^r@)
+    -- | Match exactly when the given regex does not (written @^r@).
     | Not (GRegex x str a)
     -- TODO character classes
     -- | Match the given regex while capturing input into the capture-so-far string with the given group name

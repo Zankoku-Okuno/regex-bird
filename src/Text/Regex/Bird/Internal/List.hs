@@ -50,10 +50,10 @@ unsnoc xs = Just (init xs, last xs)
 {-| Constraint synonym that aggregates the usual constraints on regex functions.
 
     We need 'Ord' constraints on both @x@ and @t@ because they are used to maintain
-    environments in 'Text.Regex.Bird.Internal.Env'.
+    environments in @Text.Regex.Bird.Internal.Env@.
     The 'ListLike'@ t a@ constraint expresses that the input is a sequence @t@ of characters in an alphabet @a@.
     The 'Eq'@ a@ constraint is required so that characters can be tested for equality, which is essential for literal patterns.
-    Odds are, any 'ListLike'@ t a@ will already require 'Eq'@ a@,
+    Odds are, any 'ListLike'@ t a@ will already implement 'Eq'@ a@,
     but this property is not encoded as a superclass of 'ListLike', so we have to include it here anyway.
 -}
 type Regexable x t a = (Ord x, Ord t, ListLike t a, Eq a)

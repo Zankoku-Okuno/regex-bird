@@ -8,10 +8,8 @@
     None of these operations are user-facing,
     but the user-facing operations are simple iterations of these operations.
 
-    The algorithms given here rely on prior modules for optimization.
-    This keeps the implementing code clean and therefore easy to verify against the mathematics.
-    Especially useful if 'Text.Regex.Bird.Internal.Expression', which has optimizing patterns.
-    With these, obviously sub-optimal patterns such as @⊥ | r@, which appear commonly with these algorithms, are optimized.
+    The algorithms given here rely on the optimizing patterns in "Text.Regex.Bird.Internal.Expression".
+    This keeps the algorithmic code more functionality-oriented and therefore easy to verify against the mathematics.
 -}
 module Text.Regex.Bird.Internal.Algorithms where
 
@@ -93,7 +91,7 @@ nu θ (Theta θ' r) = nu (θ `Env.update` θ') r
 ∂_a^θ(?x=A*.r) = (?x=A*a. ∂_a^θ(r))
 ∂_a^θ(=x)    { = ∂_a^θ(θ(x))   if x ∈ dom(θ)
              { = ⊥             otherwise
-∂_a^θ(θ': r)  = θ': ∂_a^{θ ∪⃯ θ'}(r)
+∂_a^θ(θ': r)   = θ': ∂_a^{θ ∪⃯ θ'}(r)
 @
 
     Because we are using a slightly more efficient encoding, some patterns below

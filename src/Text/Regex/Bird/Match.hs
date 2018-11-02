@@ -4,9 +4,9 @@
     There are two main reasons why there may be multiple matches:
 
     - Capturing groups may be ambigious.
-        For example, matching @(?x=a*)(?y=a*)@ against an input of many @a@s could
+        For example, matching @(?x.a*)(?y.a*)@ against an input of many \'@a@\'s could
         split the input between the @x@ and @y@ capturing groups in many ways.
-    - If prefixes/suffixes are allowed, a match might be found in multiple places
+    - If prefixes/suffixes are allowed (e.g. 'prefixMatches'), a match might be found in multiple places
         of the same input.
 
     It is up to the client to decide which match meets their criteria best:
@@ -35,7 +35,7 @@ import Text.Regex.Bird.Internal.Algorithms
 
     It does not contain any information about the regex that made the match,
     nor does it contain any extra information about the string beyond what was
-    matched. It is the client's ressponsibility to keep track of that info if it's relevant.
+    matched. It is the client's responsibility to keep track of that info if it's relevant.
 -}
 data Match x t a = Match
     { wholeMatch :: t -- ^the entire input string that was matched
@@ -44,6 +44,7 @@ data Match x t a = Match
 
 
 {-| Match the given regex against the entire input and obtain all possible matches.
+    If the regex does not match the input, an empty list is returned.
     Matching with this essentially anchors the regex on both ends (i.e. @^...$@).
 -}
 fullMatches :: (Regexable x t a) => GRegex x t a -> t -> [Match x t a]
@@ -58,6 +59,7 @@ fullMatches r input = mkMatches $ go r input
         }
 
 {-| Match the given regex against prefixes of the input.
+    If the regex does not match the input, an empty list is returned.
     This is essentially matching with a start anchor, but not an end anchor (i.e. @^...@).
 
     This function also returns the "continuation" for each match ---
@@ -71,6 +73,7 @@ prefixMatches r input = concatMap match splits
     match (str, post) = (, post) <$> fullMatches r str
 
 {-| Match the given regex with any part of the input.
+    If the regex does not match the input, an empty list is returned.
     This is essentially matching without anchors.
 
     This function also returns the surrounding input context for each match ---
@@ -84,6 +87,7 @@ infixMatches r input = concatMap match splits
     flatTriple a (b, c) = (a, b, c)
 
 {-| Match suffixes of the input against the given regex.
+    If the regex does not match the input, an empty list is returned.
     This is essentially matching with an end anchor, but not a start anchor (i.e. @...$@).
 
     This function also returns the "pre-continuation" for each match ---
