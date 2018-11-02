@@ -1,0 +1,18 @@
+Concrete syntax
+    Parse regex patterns
+    Render back patterns
+Common match ambiguity filtering
+Performance profiling
+Optimizing Patterns
+    Check that I'm not missing obvious things
+    Use List/Sequence for Seq patterns instead of binary
+    Use Set/List/Sequence for Alt and And patterns instead of binary
+New Patterns
+    Character classes
+    Bounded repetition
+Usage examples, with tests
+Research
+    Write the paper
+    Proove that the algorithm is correct
+    Include paper in documentation
+Compile to automaton

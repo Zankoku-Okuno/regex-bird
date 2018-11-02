@@ -53,6 +53,7 @@ Even if it ends up just being user error, I'm still interested, since the proble
 
 If you're interested in hacking on the library, the source code is on [github](https://github.com/Zankoku-Okuno/regex-bird).
 The build system uses [stack](https://docs.haskellstack.org/en/stable/README/) so that the build is isolated from system setup.
+A short list of tasks that I still need to work on is given in `TODO.txt`.
 
 I haven't settled on any code standards yet.
 This is a small enough library so far that I can normalize the style of any contributions by hand.
