@@ -91,6 +91,8 @@ pattern Seq r r' <- Seq_ r r'
     Seq (Str Nil) r' = r'
     Seq r (Str Nil) = r
     Seq (Str w) (Str w') = Str (w <> w')
+    Seq (Str w) (Seq (Str w') r) = Seq (Str (w <> w')) r
+    Seq (Seq r (Str w)) (Str w') = Seq r (Str (w <> w'))
     -- TODO capture, theta
     Seq r r' = Seq_ r r'
 
