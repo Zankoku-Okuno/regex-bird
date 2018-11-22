@@ -62,7 +62,7 @@ data GRegex x str a =
     | Not (GRegex x str a)
     -- TODO character classes
     -- | Match the given regex while capturing input into the capture-so-far string with the given group name
-    --   (written @(?x=A*.r)@, or @(?x.r)@ when @A*@ is empty).
+    --   (written @(?x:A*=r)@, or @(?x=r)@ when @A*@ is empty).
     --   In a user's regexes, the capture-so-far string will always be empty;
     --   it only appears non-empty as an intermediate step in pattern-matching.
     | Capture x str (GRegex x str a)

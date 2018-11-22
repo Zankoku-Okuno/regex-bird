@@ -29,12 +29,12 @@ This can often be seen as an advantage, since less powerful libraries can be muc
 Unfortunately, there are common situations where plain regular languages have _not quite_ enough power.
 In particular, I want to be able to tokenize a docstring with a single regex:
 ```
-<<<(?delim.\w+)\n(?text=^(.*\n(=delim)>>>.*))\n(=delim)>>>
+<<<(?delim=\w+)\n(?text=^(.*\n(=delim)>>>.*))\n(=delim)>>>
 
 (Capture anything between triple angle brackets+delimiter into the group named "text",
 just as long as that text does not contain the end delimiter at the start of a line.)
 
-(Note that `(?x.r)` matches `r` and stores the result in the group `x`.
+(Note that `(?x=r)` matches `r` and stores the result in the group `x`.
 Further, `(=x)` replays the last match stored in `x`.)
 ```
 

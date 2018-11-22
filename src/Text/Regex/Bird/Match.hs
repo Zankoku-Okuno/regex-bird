@@ -4,7 +4,7 @@
     There are two main reasons why there may be multiple matches:
 
     - Capturing groups may be ambigious.
-        For example, matching @(?x.a*)(?y.a*)@ against an input of many \'@a@\'s could
+        For example, matching @(?x=a*)(?y=a*)@ against an input of many \'@a@\'s could
         split the input between the @x@ and @y@ capturing groups in many ways.
     - If prefixes/suffixes are allowed (e.g. 'prefixMatches'), a match might be found in multiple places
         of the same input.
@@ -41,6 +41,7 @@ data Match x t a = Match
     { wholeMatch :: t -- ^the entire input string that was matched
     , capturingGroups :: Map x t -- ^all last-seen capturing groups
     }
+    deriving(Show)
 
 
 {-| Match the given regex against the entire input and obtain all possible matches.

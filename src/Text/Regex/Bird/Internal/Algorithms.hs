@@ -44,7 +44,7 @@ import Text.Regex.Bird.Internal.Expression
 ν_θ(^r)      { = {θ}    if ν_θ(r) = 0
              { = 0      otherwise
 ν_θ(r*)        = {θ}
-ν_θ(?x=A*.r)   = Σ_{θ' ∈ ν_θ(r)} θ' ∪⃯ {x ↦ A*}
+ν_θ(?x:A*=r)   = Σ_{θ' ∈ ν_θ(r)} θ' ∪⃯ {x ↦ A*}
 ν_θ(=x)      { = {θ}   if θ(x) = ""
              { = 0     otherwise
 ν_θ(θ': r)     = ν_{θ ∪⃯ θ'}(r)
@@ -88,7 +88,7 @@ nu θ (Theta θ' r) = nu (θ `Env.update` θ') r
 ∂_a^θ(r&r')    = ∂_a^θ(r) & ∂_a^θ(r')
 ∂_a^θ(r*)      = ∂_a^θ(r) r*
 ∂_a^θ(^r)      = ^(∂_a^θ(r))
-∂_a^θ(?x=A*.r) = (?x=A*a. ∂_a^θ(r))
+∂_a^θ(?x:A*=r) = (?x:A*a= ∂_a^θ(r))
 ∂_a^θ(=x)    { = ∂_a^θ(θ(x))   if x ∈ dom(θ)
              { = ⊥             otherwise
 ∂_a^θ(θ': r)   = θ': ∂_a^{θ ∪⃯ θ'}(r)

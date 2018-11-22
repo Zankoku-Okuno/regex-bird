@@ -20,6 +20,7 @@ module Text.Regex.Bird.Internal.List
 
 import Prelude hiding (null, last, init)
 import Data.ListLike
+import Data.Symbol
 
 
 {-| Pattern for empty 'ListLike' instances. -}
@@ -45,6 +46,10 @@ pattern xs :|> x <- (unsnoc -> Just (xs, x))
 -}
 unsnoc Nil = Nothing
 unsnoc xs = Just (init xs, last xs)
+
+instance StringLike Symbol where
+    fromString = intern
+    toString = unintern
 
 
 {-| Constraint synonym that aggregates the usual constraints on regex functions.

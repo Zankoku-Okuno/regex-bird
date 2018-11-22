@@ -1,68 +1,81 @@
 module Text.Regex.Bird.Internal.Parse where
 
 import Data.Char
-import Data.Symbol
-import Data.Text (Text)
-import qualified Data.Text as T
-import Text.Regex.Bird.Patterns
-import Text.Regex.Bird.Text
+import qualified Data.String
+import Data.ListLike (ListLike, StringLike(fromString))
+
 import Control.Applicative
 import Data.Attoparsec.Text
+import qualified Data.Text as T
+
+import Text.Regex.Bird.Patterns
 
 
-parseRegex :: Text -> Either String Regex
-parseRegex = parseOnly (regex <* endOfInput)
+type CharRegex x s = (StringLike s, ListLike s Char, StringLike x, Ord s, Ord x)
 
-regex :: Parser Regex
+
+parseRegex :: (CharRegex x s) => String -> Either String (GRegex x s Char)
+parseRegex = parseOnly (regex <* endOfInput) . T.pack
+
+instance (CharRegex x s) => Data.String.IsString (GRegex x s Char) where
+    fromString str = case parseRegex str of
+        Left err -> error $ "Regex parse error: " ++ err
+        Right r -> r
+
+
+regex :: CharRegex x s => Parser (GRegex x s Char)
 regex = altRegex
 
-altRegex :: Parser Regex
+altRegex :: CharRegex x s => Parser (GRegex x s Char)
 altRegex = do
     products <- andRegex `sepBy1` (char '|')
     pure $ foldr1 Alt products
 
-andRegex :: Parser Regex
+andRegex :: CharRegex x s => Parser (GRegex x s Char)
 andRegex = do
     terms <- seqRegex `sepBy1` (char '&')
     pure $ foldr1 And terms
 
-seqRegex :: Parser Regex
+seqRegex :: CharRegex x s => Parser (GRegex x s Char)
 seqRegex = do
-    parts <- many atomicRegex
+    parts <- many affixRegex
     pure $ foldr Seq Empty parts
 
-atomicRegex :: Parser Regex
-atomicRegex = do
+affixRegex :: CharRegex x s => Parser (GRegex x s Char)
+affixRegex = do
     prefixes <- many prefix
-    base <- choice
-                [ top
-                , parenthesized
-                -- character classes
-                , escaped
-                , literal
-                ]
+    base <- atomRegex
     suffixes <- many suffix
     let applyPrefixes = foldr (.) id prefixes
         applySuffixes = foldl (.) id suffixes
     pure $ (applySuffixes . applyPrefixes) base
 
+atomRegex :: CharRegex x s => Parser (GRegex x s Char)
+atomRegex = choice
+    [ top
+    , parenthesized
+    -- character classes
+    , escaped
+    , literal
+    ]
 
-top :: Parser Regex
+
+top :: CharRegex x s => Parser (GRegex x s Char)
 top = do
     char '.'
     pure Any
 
-escaped :: Parser Regex
+escaped :: CharRegex x s => Parser (GRegex x s Char)
 escaped = do
     char '\\'
     Char <$> anyChar
 
-literal :: Parser Regex
+literal :: CharRegex x s => Parser (GRegex x s Char)
 literal = do
     Char <$> satisfy (notInClass specialChars)
 
 
-parenthesized :: Parser Regex
+parenthesized :: CharRegex x s => Parser (GRegex x s Char)
 parenthesized = do
     char '('
     k <- choice
@@ -77,19 +90,19 @@ parenthesized = do
     capture = do
         char '?'
         ctor <- Capture <$> symbol
-        char '.'
+        char '='
         pure $ ctor <$> regex
     replay = do
         char '='
         ctor <- Replay <$> symbol
         pure $ pure ctor
 
-prefix :: Parser (Regex -> Regex)
+prefix :: CharRegex x s => Parser (GRegex x s Char -> GRegex x s Char)
 prefix = do
     char '^'
     pure Not
 
-suffix :: Parser (Regex -> Regex)
+suffix :: CharRegex x s => Parser (GRegex x s Char -> GRegex x s Char)
 suffix = choice
     [ Star <$ char '*'
     , Plus <$ char '+'
@@ -98,7 +111,7 @@ suffix = choice
     ]
 
 
-symbol :: Parser Symbol
-symbol = intern . T.unpack <$> takeWhile1 isAlphaNum
+symbol :: StringLike x => Parser x
+symbol = fromString . T.unpack <$> takeWhile1 isAlphaNum
 
 specialChars = ".\\&|^?*+()[]{}"

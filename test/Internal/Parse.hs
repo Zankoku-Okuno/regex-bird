@@ -7,16 +7,16 @@ import Text.Regex.Bird
 import Text.Regex.Bird.Text
 import Text.Regex.Bird.Internal.Parse
 
-smoke :: [(Text, Either String Regex, Regex)]
+smoke :: [(String, Either String Regex, Regex)]
 smoke = catMaybes $ run_parseSmoke <$> smokeTests_parse
 
-run_parseSmoke :: (Text, Regex) -> Maybe (Text, Either String Regex, Regex)
+run_parseSmoke :: (String, Regex) -> Maybe (String, Either String Regex, Regex)
 run_parseSmoke (input, expected) = case parseRegex input of
     Left err -> Just (input, Left err, expected)
     Right out | out /= expected -> Just (input, Right out, expected)
               | otherwise -> Nothing
 
-smokeTests_parse :: [(Text, Regex)]
+smokeTests_parse :: [(String, Regex)]
 smokeTests_parse =
     [ (".", Any)
     , ("", Empty)
@@ -31,9 +31,9 @@ smokeTests_parse =
     , ("Hello, regex!", Str "Hello, regex!")
     , ("Hello, .!", Seq (Str "Hello, ") $ Seq Any (Str "!"))
 
-    , ("(?0.zero)", Capture "0" (Str "zero"))
-    , ("(?x.eks)", Capture "x" (Str "eks"))
-    , ("(?00foo.Special Agent Double-O Foo)", Capture "00foo" (Str "Special Agent Double-O Foo"))
+    , ("(?0=zero)", Capture "0" (Str "zero"))
+    , ("(?x=eks)", Capture "x" (Str "eks"))
+    , ("(?00foo=Special Agent Double-O Foo)", Capture "00foo" (Str "Special Agent Double-O Foo"))
     , ("(=0)", Replay "0")
     , ("(=x)", Replay "x")
     , ("(=11)", Replay "11")

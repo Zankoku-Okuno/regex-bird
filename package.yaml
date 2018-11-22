@@ -33,6 +33,8 @@ default-extensions:
 - TupleSections
 - ViewPatterns
 - ConstraintKinds
+- FlexibleInstances
+- FlexibleContexts
 
 library:
   source-dirs: src

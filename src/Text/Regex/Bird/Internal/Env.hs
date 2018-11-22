@@ -49,7 +49,7 @@ import qualified Data.Set as Set
     @(a)(a)...@, @(aa)(a)...@, @(aaa)(aaaaa)...@, and so on).
     Normally, this parsing ambiguity doesn't matter, since regexes only test for acceptance.
     However, when backreferences are allowed, the choice of "parse tree" influences acceptance.
-    Consider @(?1.a*)(=1)a@ applied to the input @a@:
+    Consider @(?1=a*)(=1)a@ applied to the input @a@:
     if the capturing group consumes the first \'@a@\', then the overall match will fail because two more \'@a@\'s are expected,
     but the first capturing group could capture empty, so the backreference would expect empty,
     and there would still be the input \'@a@\' left to match with the literal,
