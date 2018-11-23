@@ -137,19 +137,19 @@ symbol :: StringLike x => Parser x
 symbol = fromString . T.unpack <$> takeWhile1 isAlphaNum
 
 classEntry :: Parser (Char, Char)
-classEntry = choice [range, single, escaped]
+classEntry = choice [range, single]
     where
     range = do
-        low <- notChar ']'
+        low <- aChar
         char '-'
-        high <- notChar ']'
+        high <- aChar
         pure (low, high)
     single = do
-        c <- notChar ']'
+        c <- aChar
         pure (c, c)
-    escaped = do
-        char '\\'
-        c <- anyChar
-        pure (c, c)
+    aChar = choice
+        [ char '\\' *> anyChar
+        , satisfy (\c -> c /= '\\' && c /= ']')
+        ]
 
 specialChars = ".\\&|^?*+()[]{}"
