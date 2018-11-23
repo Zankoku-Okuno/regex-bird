@@ -35,6 +35,13 @@ smokeTests_match =
     , (Any, "b", [[]])
     , (Any, "as", [])
 
+    , (Elem [('a', 'b')], "a", [[]])
+    , (Elem [('a', 'b')], "b", [[]])
+    , (Elem [('a', 'b')], "c", [])
+    , (NotElem [('a', 'b')], "a", [])
+    , (NotElem [('a', 'b')], "b", [])
+    , (NotElem [('a', 'b')], "c", [[]])
+
     , (Bot, "", [])
     , (Bot, "a", [])
     , (Bot, "as", [])
@@ -66,6 +73,12 @@ smokeTests_match =
     , (Star (Str "a"), "a", [[]])
     , (Star (Str "a"), "aa", [[]])
     , (Star (Str "a"), "aaa", [[]])
+
+    -- bounded repetition
+    , (Rep (1, Just 2) (Str "a"), "", [])
+    , (Rep (1, Just 2) (Str "a"), "a", [[]])
+    , (Rep (1, Just 2) (Str "a"), "aa", [[]])
+    , (Rep (1, Just 2) (Str "a"), "aaa", [])
 
     -- not
     , (Not (Seq (Star Any) $ Seq (Str "b") (Star Any)), "", [[]])

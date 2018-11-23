@@ -3,6 +3,7 @@ module Internal.Algo.Nu (smoke) where
 import Data.Maybe
 import Data.Text (Text)
 
+import qualified Data.RangeSet.Map as R
 import qualified Text.Regex.Bird.Internal.Env as Env
 import Text.Regex.Bird.Internal.Expression
 import Text.Regex.Bird.Internal.Algorithms
@@ -34,6 +35,9 @@ smokeTests_nu =
 
     , (Bot, []) -- ⊥ does not accept empty
 
+    , (Elem $ R.singletonRange ('a', 'c'), [])
+    , (NotElem $ R.singletonRange ('a', 'c'), [])
+
     , (Str "", [[]]) -- ε accepts empty
 
      -- literals do not accept empty
@@ -59,8 +63,14 @@ smokeTests_nu =
     , (And (Str "a") (Str "b"), [])
 
     -- star always accepts empty
-    , (Star (Str ""), [[]])
-    , (Star (Str "a"), [[]])
+    , (Rep (0, Nothing) (Str ""), [[]])
+    , (Rep (0, Nothing) (Str "a"), [[]])
+    -- plus always accepts empty
+    , (Rep (1, Nothing) (Str ""), [])
+    , (Rep (1, Nothing) (Str "a"), [])
+    -- repetition runs out
+    , (Rep (0, Just 0) (Str ""), [[]])
+    , (Rep (0, Just 0) (Str "a"), [[]])
 
     -- complement accepts backwardsly
     , (Not (Str ""), [])
@@ -104,5 +114,5 @@ smokeTests_nu =
     , (Theta (Env.empty `Env.insert` ("1", "hi")) Bot, [])
 
     -- capturing groups do not escape star
-    , (Star (Theta (Env.empty `Env.insert` ("1", "boo!")) (Str "")), [[]])
+    , (Rep (0, Nothing) (Theta (Env.empty `Env.insert` ("1", "boo!")) (Str "")), [[]])
     ]

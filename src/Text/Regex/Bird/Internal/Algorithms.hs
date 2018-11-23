@@ -11,10 +11,11 @@
     The algorithms given here rely on the optimizing patterns in "Text.Regex.Bird.Internal.Expression".
     This keeps the algorithmic code more functionality-oriented and therefore easy to verify against the mathematics.
 -}
-module Text.Regex.Bird.Internal.Algorithms where
+module Text.Regex.Bird.Internal.Algorithms (nu, d) where
 
 import Prelude hiding (foldr, null)
 
+import qualified Data.RangeSet.Map as R
 import Text.Regex.Bird.Internal.List
 import Text.Regex.Bird.Internal.Env (Env, NdEnv)
 import qualified Text.Regex.Bird.Internal.Env as Env
@@ -38,12 +39,15 @@ import Text.Regex.Bird.Internal.Expression
 ν_θ(⊥)         = 0
 ν_θ(ε)         = {θ}
 ν_θ(c)         = 0
+ν_θ([A*])      = 0
+ν_θ([^A*])     = 0
 ν_θ(r r')      = Σ_{θ' ∈ ν_θ(r)} Σ_{θ'' ∈ ν_{θ'}(r')} {θ''}
 ν_θ(r|r')      = ν_θ(r) ∪ ν_θ(r')
 ν_θ(r&r')      = Σ_{θ' ∈ ν_θ(r)} Σ_{θ'' ∈ ν_{θ}(r')} {θ''}
 ν_θ(^r)      { = {θ}    if ν_θ(r) = 0
              { = 0      otherwise
-ν_θ(r*)        = {θ}
+ν_θ(r{m,n})  { = {θ}    if m = 0
+             { = 0      otherwise
 ν_θ(?x:A*=r)   = Σ_{θ' ∈ ν_θ(r)} θ' ∪⃯ {x ↦ A*}
 ν_θ(=x)      { = {θ}   if θ(x) = ""
              { = 0     otherwise
@@ -63,10 +67,13 @@ nu _ Any = Env.no
 nu _ Bot = Env.no
 nu θ (Str Nil) = Env.one θ
 nu _ (Str _) = Env.no
+nu _ (Elem _) = Env.no
+nu _ (NotElem _) = Env.no
 nu θ (Seq r r') = Env.many [θ'' | θ' <- Env.amb (nu θ r), θ'' <- Env.amb (nu θ' r')]
 nu θ (Alt r r') = Env.join (nu θ r) (nu θ r')
 nu θ (And r r') = Env.many [θ' `Env.update` θ'' | θ' <- Env.amb (nu θ r), θ'' <- Env.amb (nu θ r')]
-nu θ (Star r) = Env.one θ
+nu θ (Rep (0, _) _) = Env.one θ
+nu θ (Rep _ r) = Env.no
 nu θ (Not r) = if (null . Env.amb) (nu θ r) then Env.one θ else Env.no
 nu θ (Capture x str r) = Env.many $ [θ' `Env.insert` (x, str) | θ' <- Env.amb (nu θ r) ]
 nu θ (Replay x) = if (null <$> θ `Env.lookup` x) == Just True then Env.ok else Env.no
@@ -78,15 +85,20 @@ nu θ (Theta θ' r) = nu (θ `Env.update` θ') r
     The derivatives are defined as follows:
 
 @
-∂_a^θ(⊤)       = ε
-∂_a^θ(⊥)       = ⊥
-∂_a^θ(ε)       = ⊥
-∂_a^θ(c)     { = ε      if a = c
-             { = ⊥      otherwise
-∂_a^θ(r r')    = ∂_a^θ(r)r' | Σ_{θ' ∈ ν_θ(r)} θ': ∂_a^{θ ∪⃯ θ'}(r')
-∂_a^θ(r|r')    = ∂_a^θ(r) | ∂_a^θ(r')
-∂_a^θ(r&r')    = ∂_a^θ(r) & ∂_a^θ(r')
-∂_a^θ(r*)      = ∂_a^θ(r) r*
+∂_a^θ(⊤)        = ε
+∂_a^θ(⊥)        = ⊥
+∂_a^θ(ε)        = ⊥
+∂_a^θ(c)      { = ε      if a = c
+              { = ⊥      otherwise
+∂_a^θ([A*])   { = ε      if a ∈ {A*}
+              { = ⊥      otherwise
+∂_a^θ([A*])   { = ⊥      if a ∈ {A*}
+              { = ε      otherwise
+∂_a^θ(r r')     = ∂_a^θ(r)r' | Σ_{θ' ∈ ν_θ(r)} θ': ∂_a^{θ ∪⃯ θ'}(r')
+∂_a^θ(r|r')     = ∂_a^θ(r) | ∂_a^θ(r')
+∂_a^θ(r&r')     = ∂_a^θ(r) & ∂_a^θ(r')
+∂_a^θ(r{m,n}) { = ∂_a^θ(r) r{m-1,n-1}    if n /= 0
+              { = ⊥                      otherwise
 ∂_a^θ(^r)      = ^(∂_a^θ(r))
 ∂_a^θ(?x:A*=r) = (?x:A*a= ∂_a^θ(r))
 ∂_a^θ(=x)    { = ∂_a^θ(θ(x))   if x ∈ dom(θ)
@@ -108,13 +120,18 @@ d _ _ Any = Str empty
 d _ _ Bot = Bot
 d _ _ (Str Nil) = Bot
 d _ a (Str (c :<| w)) = if a == c then Str w else Bot
+d _ a (Elem cs) = if a `R.member` cs then Str empty else Bot
+d _ a (NotElem cs) = if a `R.notMember` cs then Str empty else Bot
 d θ a (Seq r r') = foldr Alt
     (d θ a r `Seq` r')
     [Theta θ' $ d (θ `Env.update` θ') a r' | θ' <- Env.amb (nu θ r)]
 d θ a (Alt r r') = Alt (d θ a r) (d θ a r')
 d θ a (And r r') = And (d θ a r) (d θ a r')
-d θ a (Star r) = Seq (d θ a r) (Star r)
+d θ a (Rep (_, Just 0) r) = Bot
+d θ a (Rep (m, n) r) = Seq (d θ a r) (Rep (clampDecrement m, clampDecrement <$> n) r)
 d θ a (Not r) = Not (d θ a r)
 d θ a (Capture x w r) = Capture x (w :|> a) (d θ a r)
 d θ a (Replay x) = maybe Bot (\w -> d θ a (Str w)) $ θ `Env.lookup` x
 d θ a (Theta θ' r) = Theta θ' $ d (θ `Env.update` θ') a r
+
+clampDecrement n = (n - 1) `max` 0

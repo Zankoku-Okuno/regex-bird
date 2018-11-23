@@ -3,6 +3,7 @@ module Internal.Algo.Deriv (smoke) where
 import Data.Maybe
 import Data.Text (Text)
 
+import qualified Data.RangeSet.Map as R
 import qualified Text.Regex.Bird.Internal.Env as Env
 import Text.Regex.Bird.Internal.Expression
 import Text.Regex.Bird.Internal.Algorithms
@@ -40,6 +41,11 @@ smokeTests_deriv =
     , (Any, 'a', [[]])
     , (Str "a", 'a', [[]])
     , (Str "aa", 'a', []) -- because it's still expecting another 'a'
+    , (Elem $ R.singletonRange ('a', 'b'), 'a', [[]])
+    , (Elem $ R.singletonRange ('a', 'b'), 'b', [[]])
+    , (Elem $ R.singletonRange ('a', 'b'), 'c', [])
+    , (NotElem $ R.singletonRange ('a', 'b'), 'a', [])
+    , (NotElem $ R.singletonRange ('a', 'b'), 'c', [[]])
 
     -- TODO what smoke tests can I run on Seq?
 
@@ -54,10 +60,17 @@ smokeTests_deriv =
     , (And (Str "b") (Str "a"), 'a', [])
 
     -- Star: r* equivalent to rr* when input not empty
-    , (Star (Str "a"), 'a', [[]])
-    , (Star (Str "a"), 'c', [])
-    , (Star (Alt (Str "a") (Str "b")), 'a', [[]])
-    , (Star (Alt (Str "a") (Str "b")), 'b', [[]])
+    , (Rep (0, Nothing) (Str "a"), 'a', [[]])
+    , (Rep (0, Nothing) (Str "a"), 'c', [])
+    , (Rep (0, Nothing) (Alt (Str "a") (Str "b")), 'a', [[]])
+    , (Rep (0, Nothing) (Alt (Str "a") (Str "b")), 'b', [[]])
+    -- empty repetition only accepts empty
+    , (Rep (0, Just 0) (Str "a"), 'a', [])
+    -- minimum repetition must be met
+    , (Rep (1, Nothing) (Str "a"), 'a', [[]])
+    , (Rep (2, Nothing) (Str "a"), 'a', [])
+    -- backwards repetition bounds don't match
+    , (Rep (1, Just 0) (Str "a"), 'a', [])
 
     -- complement accepts backwardsly
     , (Not (Str "a"), 'a', [])
@@ -79,6 +92,6 @@ smokeTests_deriv =
     , (Theta (Env.empty `Env.insert` ("1", "x")) (Str "a"), 'a', [[("1", "x")]])
 
     -- state makes it way through an expanded star
-    , (Star (Capture "1" "" $ Alt (Str "a") (Str "b")), 'a', [[("1", "a")]])
-    , (Star (Capture "1" "" $ Alt (Str "a") (Str "b")), 'b', [[("1", "b")]])
+    , (Rep (0, Nothing) (Capture "1" "" $ Alt (Str "a") (Str "b")), 'a', [[("1", "a")]])
+    , (Rep (0, Nothing) (Capture "1" "" $ Alt (Str "a") (Str "b")), 'b', [[("1", "b")]])
     ]

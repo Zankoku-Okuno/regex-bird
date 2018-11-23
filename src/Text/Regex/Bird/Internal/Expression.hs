@@ -19,9 +19,11 @@ module Text.Regex.Bird.Internal.Expression
     , pattern Seq
     , pattern Alt
     , pattern And
+    , pattern Rep
     , pattern Theta
     ) where
 
+import Data.RangeSet.Map (RSet)
 import Text.Regex.Bird.Internal.List
 import Text.Regex.Bird.Internal.Env (Env)
 import qualified Text.Regex.Bird.Internal.Env as Env
@@ -42,6 +44,10 @@ import qualified Text.Regex.Bird.Internal.Env as Env
 data GRegex x str a =
     -- | A pattern that matches any character (written @⊤@)
       Any
+    -- | A pattern that matches any character in the given class (written @[abcx-z]@)
+    | Elem (RSet a)
+    -- | A pattern that matches any character _not_ in the given class (written @[^abcx-z]@)
+    | NotElem (RSet a)
     -- | A pattern that does not match anything, even empty string (written @⊥@).
     | Bot
     -- | A pattern matching a specific sequence of characters
@@ -56,8 +62,9 @@ data GRegex x str a =
     -- | Match both of the given patterns (written @r&r'@).
     --   See 'And' for an optimizing version.
     | And_ (GRegex x str a) (GRegex x str a)
-    -- | Match zero or more of the given pattern (written @r*@).
-    | Star (GRegex x str a)
+    -- | Match between @m@ and @n@ of the given pattern (written @r{m,n}@ or @r{,n}@ if @m = 0@)
+    --   If @n@ is omitted, then there is no maximum number of repetitions.
+    | Rep_ (Int, Maybe Int) (GRegex x str a)
     -- | Match exactly when the given regex does not (written @^r@).
     | Not (GRegex x str a)
     -- TODO character classes
@@ -119,6 +126,17 @@ pattern And r r' <- And_ r r'
     And Bot r' = Bot
     And r Bot = Bot
     And r r' = And_ r r'
+
+{-| Match between @m@ and @n@ of the given pattern, or at least @m@ if @n@ is 'Nothing'/
+    Use this in place of 'Rep_'.
+
+    - fails whenever the maximum is less than the minimum
+-}
+pattern Rep :: (Regexable x t a) => (Int, Maybe Int) -> GRegex x t a -> GRegex x t a
+pattern Rep bounds r <- Rep_ bounds r
+    where
+    Rep (m, Just n) r | m > n = Bot
+    Rep bounds r = Rep_ bounds r
 
 -- TODO optimizing patterns: Capture
 

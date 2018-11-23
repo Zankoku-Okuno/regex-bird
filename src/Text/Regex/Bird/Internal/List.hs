@@ -61,4 +61,4 @@ instance StringLike Symbol where
     Odds are, any 'ListLike'@ t a@ will already implement 'Eq'@ a@,
     but this property is not encoded as a superclass of 'ListLike', so we have to include it here anyway.
 -}
-type Regexable x t a = (Ord x, Ord t, ListLike t a, Eq a)
+type Regexable x t a = (Ord x, Ord t, Ord a, ListLike t a, Eq a, Enum a)

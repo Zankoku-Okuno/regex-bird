@@ -3,6 +3,8 @@ module Text.Regex.Bird.Internal.Parse where
 import Data.Char
 import qualified Data.String
 import Data.ListLike (ListLike, StringLike(fromString))
+import Data.RangeSet.Map (RSet)
+import qualified Data.RangeSet.Map as R
 
 import Control.Applicative
 import Data.Attoparsec.Text
@@ -54,7 +56,7 @@ atomRegex :: CharRegex x s => Parser (GRegex x s Char)
 atomRegex = choice
     [ top
     , parenthesized
-    -- character classes
+    , charClass
     , escaped
     , literal
     ]
@@ -70,10 +72,17 @@ escaped = do
     char '\\'
     Char <$> anyChar
 
+charClass :: CharRegex x s => Parser (GRegex x s Char)
+charClass = do
+    char '['
+    ctor <- option Elem (NotElem <$ char '^')
+    cs <- many classEntry
+    char ']'
+    pure $ ctor cs
+
 literal :: CharRegex x s => Parser (GRegex x s Char)
 literal = do
     Char <$> satisfy (notInClass specialChars)
-
 
 parenthesized :: CharRegex x s => Parser (GRegex x s Char)
 parenthesized = do
@@ -97,6 +106,7 @@ parenthesized = do
         ctor <- Replay <$> symbol
         pure $ pure ctor
 
+
 prefix :: CharRegex x s => Parser (GRegex x s Char -> GRegex x s Char)
 prefix = do
     char '^'
@@ -107,11 +117,39 @@ suffix = choice
     [ Star <$ char '*'
     , Plus <$ char '+'
     , Option <$ char '?'
-    -- TODO {n,m}
+    , boundedRep
     ]
+
+boundedRep :: CharRegex x s => Parser (GRegex x s Char -> GRegex x s Char)
+boundedRep = do
+    char '{'
+    low <- option 0 number
+    char ','
+    high <- optional number
+    char '}'
+    pure $ Rep (low, high)
+    where
+    number :: Parser Int
+    number = read <$> many1 digit
 
 
 symbol :: StringLike x => Parser x
 symbol = fromString . T.unpack <$> takeWhile1 isAlphaNum
+
+classEntry :: Parser (Char, Char)
+classEntry = choice [range, single, escaped]
+    where
+    range = do
+        low <- notChar ']'
+        char '-'
+        high <- notChar ']'
+        pure (low, high)
+    single = do
+        c <- notChar ']'
+        pure (c, c)
+    escaped = do
+        char '\\'
+        c <- anyChar
+        pure (c, c)
 
 specialChars = ".\\&|^?*+()[]{}"

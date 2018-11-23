@@ -2,7 +2,7 @@
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 979aecdfc5dfb2bb35c55151ee601f3e76d75838b22cf0835036423d37b2450d
+-- hash: e81b2f23b8caaade8ab947ffe993dec822ed12a68c7f238c3191a42a5e373ab5
 
 name:           regex-bird
 version:        0.0.0
@@ -47,6 +47,7 @@ library
     , attoparsec ==0.13.*
     , base >=4.7 && <5
     , containers >=0.5.8
+    , range-set-list >=0.1.2 && <0.2
     , symbol >=0.2
     , text ==1.*
   default-language: Haskell2010
@@ -69,6 +70,7 @@ test-suite regex-bird-test
     , attoparsec ==0.13.*
     , base >=4.7 && <5
     , containers >=0.5.8
+    , range-set-list >=0.1.2 && <0.2
     , regex-bird
     , symbol >=0.2
     , text ==1.*

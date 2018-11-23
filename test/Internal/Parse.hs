@@ -28,6 +28,14 @@ smokeTests_parse =
     , ("\\^\\?\\*\\+", Str "^?*+")
     , ("\\(\\)\\[\\]\\{\\}", Str "()[]{}")
 
+    , ("[ab]", Elem [('a', 'a'), ('b', 'b')])
+    , ("[a-cz]", Elem [('a', 'c'), ('z', 'z')])
+    , ("[a-]", Elem [('a', 'a'), ('-', '-')])
+    , ("[c-a]", Elem [])
+    , ("[^ab]", NotElem [('a', 'a'), ('b', 'b')])
+    , ("[^a^]", NotElem [('a', 'a'), ('^', '^')])
+    , ("[^^a]", NotElem [('a', 'a'), ('^', '^')])
+
     , ("Hello, regex!", Str "Hello, regex!")
     , ("Hello, .!", Seq (Str "Hello, ") $ Seq Any (Str "!"))
 
@@ -43,6 +51,10 @@ smokeTests_parse =
     , ("^(Goodbye)", Not (Str "Goodbye"))
     , ("^^a", Not (Not (Char 'a')))
     , ("^.", Not Any)
+    , ("a{1,2}", Rep (1, Just 2) (Char 'a'))
+    , ("a{1,}", Rep (1, Nothing) (Char 'a'))
+    , ("a{,2}", Rep (0, Just 2) (Char 'a'))
+    , ("a{,}", Rep (0, Nothing) (Char 'a'))
     , ("a*", Star (Char 'a'))
     , ("a?", Option (Char 'a'))
     , ("a+", Plus (Char 'a'))

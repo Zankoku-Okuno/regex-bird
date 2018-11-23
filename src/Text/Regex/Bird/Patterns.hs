@@ -12,11 +12,13 @@ module Text.Regex.Bird.Patterns
       GRegex
     , pattern Any
     , pattern Bot
+    , pattern Elem
+    , pattern NotElem
     , pattern Str
     , pattern Seq
     , pattern Alt
     , pattern And
-    , pattern Star
+    , pattern Rep
     , pattern Not
     , pattern Capture
     , pattern Replay
@@ -25,9 +27,11 @@ module Text.Regex.Bird.Patterns
     , pattern Empty
     , pattern Char
     , pattern Option
+    , pattern Star
     , pattern Plus
     ) where
 
+import qualified Data.RangeSet.Map as R
 import Text.Regex.Bird.Internal.List
 import qualified Text.Regex.Bird.Internal.Expression as I
 import Text.Regex.Bird.Internal.Expression (GRegex)
@@ -36,6 +40,16 @@ import Text.Regex.Bird.Internal.Expression (GRegex)
 {-| A regex that matches any single character. -}
 pattern Any :: (Regexable x t a) => GRegex x t a
 pattern Any = I.Any
+
+{-| A regex that matches any single character from the given (inclusive) ranges. -}
+pattern Elem :: (Regexable x t a) => [(a, a)] -> GRegex x t a
+pattern Elem cs <- I.Elem (R.toRangeList -> cs)
+    where Elem = I.Elem . R.fromRangeList
+
+{-| A regex that matches any single character _not_ from the given (inclusive) ranges. -}
+pattern NotElem :: (Regexable x t a) => [(a, a)] -> GRegex x t a
+pattern NotElem cs <- I.NotElem (R.toRangeList -> cs)
+    where NotElem = I.NotElem . R.fromRangeList
 
 {-| A regex that never matches. -}
 pattern Bot :: (Regexable x t a) => GRegex x t a
@@ -57,9 +71,9 @@ pattern Alt r r' = I.Alt r r'
 pattern And :: (Regexable x t a) => GRegex x t a -> GRegex x t a -> GRegex x t a
 pattern And r r' = I.And r r'
 
-{-| A regex that matches zero or more repetitions of the given regex. -}
-pattern Star :: (Regexable x t a) => GRegex x t a -> GRegex x t a
-pattern Star r = I.Star r
+{-| A regex that matches between @m@ and @n@ repetitions of the given regex. -}
+pattern Rep :: (Regexable x t a) => (Int, Maybe Int) -> GRegex x t a -> GRegex x t a
+pattern Rep bounds r = I.Rep bounds r
 
 
 {-| A regex that matches only when the given regex does not match.
@@ -95,9 +109,14 @@ pattern Option :: (Regexable x t a) => GRegex x t a -> GRegex x t a
 pattern Option r <- (const Nothing -> Just r)
     where Option r = Alt Empty r
 
+{-| A regex that matches zero or more repetitions of the given regex. -}
+pattern Star :: (Regexable x t a) => GRegex x t a -> GRegex x t a
+pattern Star r <- (const Nothing -> Just r)
+    where Star r = Rep (0, Nothing) r
+
 {-| A regex that matches one or more repetitions of the given regex. -}
 pattern Plus :: (Regexable x t a) => GRegex x t a -> GRegex x t a
 pattern Plus r <- (const Nothing -> Just r)
-    where Plus r = Seq r (Star r)
+    where Plus r = Rep (1, Nothing) r
 
 -- TODO bounded repetition
