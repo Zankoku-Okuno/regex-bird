@@ -46,8 +46,6 @@ data GRegex x str a =
       Any
     -- | A pattern that matches any character in the given class (written @[abcx-z]@)
     | Elem (RSet a)
-    -- | A pattern that matches any character _not_ in the given class (written @[^abcx-z]@)
-    | NotElem (RSet a)
     -- | A pattern that does not match anything, even empty string (written @⊥@).
     | Bot
     -- | A pattern matching a specific sequence of characters

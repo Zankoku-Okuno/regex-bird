@@ -46,11 +46,6 @@ pattern Elem :: (Regexable x t a) => [(a, a)] -> GRegex x t a
 pattern Elem cs <- I.Elem (R.toRangeList -> cs)
     where Elem = I.Elem . R.fromRangeList
 
-{-| A regex that matches any single character _not_ from the given (inclusive) ranges. -}
-pattern NotElem :: (Regexable x t a) => [(a, a)] -> GRegex x t a
-pattern NotElem cs <- I.NotElem (R.toRangeList -> cs)
-    where NotElem = I.NotElem . R.fromRangeList
-
 {-| A regex that never matches. -}
 pattern Bot :: (Regexable x t a) => GRegex x t a
 pattern Bot = I.Bot
@@ -103,6 +98,10 @@ pattern Empty = Str Nil
 {-| A regex that matches only the single given character. -}
 pattern Char :: (Regexable x t a) => a -> GRegex x t a
 pattern Char c = Str (c :<| Nil)
+
+{-| A regex that matches any single character _not_ from the given (inclusive) ranges. -}
+pattern NotElem :: (Regexable x t a) => [(a, a)] -> GRegex x t a
+pattern NotElem cs = Not (Elem cs)
 
 {-| A regex that matches the given regex exactly, or else is skipped. -}
 pattern Option :: (Regexable x t a) => GRegex x t a -> GRegex x t a

@@ -40,7 +40,6 @@ import Text.Regex.Bird.Internal.Expression
 ν_θ(ε)         = {θ}
 ν_θ(c)         = 0
 ν_θ([A*])      = 0
-ν_θ([^A*])     = 0
 ν_θ(r r')      = Σ_{θ' ∈ ν_θ(r)} Σ_{θ'' ∈ ν_{θ'}(r')} {θ''}
 ν_θ(r|r')      = ν_θ(r) ∪ ν_θ(r')
 ν_θ(r&r')      = Σ_{θ' ∈ ν_θ(r)} Σ_{θ'' ∈ ν_{θ}(r')} {θ''}
@@ -68,7 +67,6 @@ nu _ Bot = Env.no
 nu θ (Str Nil) = Env.one θ
 nu _ (Str _) = Env.no
 nu _ (Elem _) = Env.no
-nu _ (NotElem _) = Env.no
 nu θ (Seq r r') = Env.many [θ'' | θ' <- Env.amb (nu θ r), θ'' <- Env.amb (nu θ' r')]
 nu θ (Alt r r') = Env.join (nu θ r) (nu θ r')
 nu θ (And r r') = Env.many [θ' `Env.update` θ'' | θ' <- Env.amb (nu θ r), θ'' <- Env.amb (nu θ r')]
@@ -92,8 +90,6 @@ nu θ (Theta θ' r) = nu (θ `Env.update` θ') r
               { = ⊥      otherwise
 ∂_a^θ([A*])   { = ε      if a ∈ {A*}
               { = ⊥      otherwise
-∂_a^θ([A*])   { = ⊥      if a ∈ {A*}
-              { = ε      otherwise
 ∂_a^θ(r r')     = ∂_a^θ(r)r' | Σ_{θ' ∈ ν_θ(r)} θ': ∂_a^{θ ∪⃯ θ'}(r')
 ∂_a^θ(r|r')     = ∂_a^θ(r) | ∂_a^θ(r')
 ∂_a^θ(r&r')     = ∂_a^θ(r) & ∂_a^θ(r')
@@ -121,7 +117,6 @@ d _ _ Bot = Bot
 d _ _ (Str Nil) = Bot
 d _ a (Str (c :<| w)) = if a == c then Str w else Bot
 d _ a (Elem cs) = if a `R.member` cs then Str empty else Bot
-d _ a (NotElem cs) = if a `R.notMember` cs then Str empty else Bot
 d θ a (Seq r r') = foldr Alt
     (d θ a r `Seq` r')
     [Theta θ' $ d (θ `Env.update` θ') a r' | θ' <- Env.amb (nu θ r)]

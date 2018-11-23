@@ -44,8 +44,6 @@ smokeTests_deriv =
     , (Elem $ R.singletonRange ('a', 'b'), 'a', [[]])
     , (Elem $ R.singletonRange ('a', 'b'), 'b', [[]])
     , (Elem $ R.singletonRange ('a', 'b'), 'c', [])
-    , (NotElem $ R.singletonRange ('a', 'b'), 'a', [])
-    , (NotElem $ R.singletonRange ('a', 'b'), 'c', [[]])
 
     -- TODO what smoke tests can I run on Seq?
 

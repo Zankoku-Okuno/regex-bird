@@ -36,7 +36,6 @@ smokeTests_nu =
     , (Bot, []) -- ⊥ does not accept empty
 
     , (Elem $ R.singletonRange ('a', 'c'), [])
-    , (NotElem $ R.singletonRange ('a', 'c'), [])
 
     , (Str "", [[]]) -- ε accepts empty
 
