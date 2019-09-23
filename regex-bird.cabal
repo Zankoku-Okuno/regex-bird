@@ -1,8 +1,10 @@
--- This file has been generated from package.yaml by hpack version 0.28.2.
+cabal-version: 1.12
+
+-- This file has been generated from package.yaml by hpack version 0.31.1.
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 83f0144db4ec325118bb2eb6349a9132236df7b4cf3754c77237ffe45edc8494
+-- hash: 56f7a8da493183c3d2bbd6ae17db0cdbdf8e9e75bdb9f1ca63335de7bcbd677f
 
 name:           regex-bird
 version:        0.0.0
@@ -15,10 +17,9 @@ copyright:      Okuno Zankoku
 license:        BSD3
 license-file:   LICENSE
 build-type:     Simple
-cabal-version:  >= 1.10
 extra-source-files:
-    ChangeLog.md
     README.md
+    ChangeLog.md
 
 source-repository head
   type: git
